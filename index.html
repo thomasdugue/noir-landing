@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noir Desktop — Bit-perfect Audio for macOS</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-type="module">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ═══════════════════════════════════════════════
+// FONT LOADER
+// ═══════════════════════════════════════════════
+function useFonts() {
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap";
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
+}
+
+// ═══════════════════════════════════════════════
+// HOOKS
+// ═══════════════════════════════════════════════
+function useReveal() {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.unobserve(el); } },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, visible];
+}
+
+function useCountUp(end, visible, duration = 1200) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!visible) return;
+    const startTime = performance.now();
+    function step(now) {
+      const p = Math.min((now - startTime) / duration, 1);
+      setVal(Math.round((1 - Math.pow(1 - p, 3)) * end));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }, [visible, end, duration]);
+  return val;
+}
+
+function useMouseParallax(strength = 0.02) {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const handler = (e) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      setOffset({
+        x: (e.clientX - cx) * strength,
+        y: (e.clientY - cy) * strength,
+      });
+    };
+    window.addEventListener("mousemove", handler, { passive: true });
+    return () => window.removeEventListener("mousemove", handler);
+  }, [strength]);
+  return offset;
+}
+
+// ═══════════════════════════════════════════════
+// SVG LOGO
+// ═══════════════════════════════════════════════
+function Logo({ size = 32, color = "#fff" }) {
+  const h = size * 0.8;
+  return (
+    <svg width={size} height={h} viewBox="0 0 100 80" fill={color}>
+      <ellipse cx="12" cy="40" rx="8" ry="8" />
+      <rect x="24" y="18" width="14" height="44" rx="7" />
+      <rect x="43" y="4" width="14" height="72" rx="7" />
+      <rect x="62" y="18" width="14" height="44" rx="7" />
+      <ellipse cx="88" cy="40" rx="8" ry="8" />
+      <ellipse cx="31" cy="40" rx="4" ry="5.5" fill="#000" />
+      <ellipse cx="50" cy="40" rx="4" ry="5.5" fill="#000" />
+      <ellipse cx="69" cy="40" rx="4" ry="5.5" fill="#000" />
+    </svg>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// FEATURE ICONS
+// ═══════════════════════════════════════════════
+function IconBitPerfect() {
+  return (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4a9" strokeWidth="1.5" strokeLinecap="round"><path d="M2 12h2l3-8 4 16 4-12 3 6h4" /></svg>);
+}
+function IconLightweight() {
+  return (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4a9" strokeWidth="1.5" strokeLinecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>);
+}
+function IconLibrary() {
+  return (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4a9" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>);
+}
+function IconUniversal() {
+  return (<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4a9" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" /></svg>);
+}
+
+// ═══════════════════════════════════════════════
+// APP MOCKUP — Faithful CSS recreation of the screenshot
+// ═══════════════════════════════════════════════
+const albumColors = [
+  ["#6b3a7d","#3a1f5c"], ["#2a4a3a","#1a3a2a"], ["#4a3a2a","#3a2a1a"],
+  ["#2a3a5a","#1a2a4a"], ["#5a3a3a","#4a2a2a"], ["#3a4a3a","#2a3a2a"],
+  ["#4a4a2a","#3a3a1a"], ["#3a2a4a","#2a1a3a"], ["#2a4a4a","#1a3a3a"],
+  ["#5a4a3a","#4a3a2a"], ["#3a5a4a","#2a4a3a"], ["#4a3a5a","#3a2a4a"],
+];
+
+const trackList = [
+  { title: "Clair de Lune", artist: "Debussy", dur: "5:12", alb: 0 },
+  { title: "Gymnopédie No.1", artist: "Satie", dur: "3:01", alb: 1 },
+  { title: "Nuvole Bianche", artist: "Einaudi", dur: "5:57", alb: 2 },
+  { title: "River Flows in You", artist: "Yiruma", dur: "3:40", alb: 3 },
+  { title: "Comptine d'un autre été", artist: "Tiersen", dur: "2:20", alb: 4 },
+  { title: "Experience", artist: "Einaudi", dur: "5:15", alb: 5 },
+  { title: "Nocturne Op.9 No.2", artist: "Chopin", dur: "4:33", alb: 6 },
+  { title: "The Heart Asks Pleasure", artist: "Richter", dur: "4:05", alb: 7 },
+];
+
+function AlbumArt({ idx, size = 40 }) {
+  const c = albumColors[idx % albumColors.length];
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: 4, flexShrink: 0,
+      background: `linear-gradient(135deg, ${c[0]}, ${c[1]})`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: size * 0.35, opacity: 0.9,
+    }}>♪</div>
+  );
+}
+
+function AppMockup() {
+  return (
+    <div className="app-mockup">
+      {/* Window chrome */}
+      <div className="mock-titlebar">
+        <div className="mock-dots">
+          <span style={{background:"#ff5f57"}} />
+          <span style={{background:"#febc2e"}} />
+          <span style={{background:"#28c840"}} />
+        </div>
+        <span className="mock-title-text">Noir</span>
+      </div>
+
+      <div className="mock-body">
+        {/* Sidebar */}
+        <div className="mock-sidebar">
+          <div className="mock-sidebar-logo">
+            <Logo size={18} color="#4a9" />
+            <span>NOIR</span>
+          </div>
+          <div className="mock-sidebar-section">
+            <span className="mock-sidebar-label">LIBRARY</span>
+            <div className="mock-sidebar-item active">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              Home
+            </div>
+            <div className="mock-sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              Search
+            </div>
+            <div className="mock-sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              Albums
+            </div>
+            <div className="mock-sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v-2"/><circle cx="9" cy="7" r="4"/></svg>
+              Artists
+            </div>
+          </div>
+          <div className="mock-sidebar-section">
+            <span className="mock-sidebar-label">PLAYLISTS</span>
+            <div className="mock-sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              Favorites
+            </div>
+            <div className="mock-sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              Late Night
+            </div>
+          </div>
+        </div>
+
+        {/* Main content */}
+        <div className="mock-main">
+          {/* Album grid */}
+          <div className="mock-albums-label">Recent Albums</div>
+          <div className="mock-album-grid">
+            {albumColors.slice(0, 6).map((c, i) => (
+              <div key={i} className="mock-album-card">
+                <div className="mock-album-cover" style={{
+                  background: `linear-gradient(135deg, ${c[0]}, ${c[1]})`,
+                }}>
+                  <span>♪</span>
+                </div>
+                <div className="mock-album-title">Album {i + 1}</div>
+                <div className="mock-album-artist">Artist</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Track list */}
+          <div className="mock-albums-label" style={{marginTop:12}}>Tracks</div>
+          <div className="mock-tracklist">
+            {trackList.map((t, i) => (
+              <div key={i} className={`mock-track${i === 0 ? " playing" : ""}`}>
+                <span className="mock-track-num">{i === 0 ?
+                  <span className="mock-eq">
+                    <span/><span/><span/>
+                  </span>
+                : (i + 1)}</span>
+                <AlbumArt idx={t.alb} size={32} />
+                <div className="mock-track-info">
+                  <span className="mock-track-title">{t.title}</span>
+                  <span className="mock-track-artist">{t.artist}</span>
+                </div>
+                <span className="mock-track-dur">{t.dur}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Player bar */}
+      <div className="mock-player">
+        <div className="mock-player-left">
+          <AlbumArt idx={0} size={36} />
+          <div>
+            <div className="mock-player-title">Clair de Lune</div>
+            <div className="mock-player-artist">Debussy</div>
+          </div>
+        </div>
+        <div className="mock-player-center">
+          <div className="mock-player-controls">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#888"><path d="M19 20L9 12l10-8v16z"/><line x1="5" y1="4" x2="5" y2="20" stroke="#888" strokeWidth="2"/></svg>
+            <div className="mock-play-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#000"><polygon points="5,3 19,12 5,21" /></svg>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#888"><path d="M5 4l10 8-10 8V4z"/><line x1="19" y1="4" x2="19" y2="20" stroke="#888" strokeWidth="2"/></svg>
+          </div>
+          <div className="mock-progress-row">
+            <span className="mock-time">1:47</span>
+            <div className="mock-progress-bar">
+              <div className="mock-progress-fill" />
+            </div>
+            <span className="mock-time">5:12</span>
+          </div>
+        </div>
+        <div className="mock-player-right">
+          <div className="mock-quality-badge">FLAC</div>
+          <div className="mock-quality-badge">24/96</div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><polygon points="11,5 6,9 2,9 2,15 6,15 11,19"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// ANIMATED FLOATING PARTICLES (hero bg)
+// ═══════════════════════════════════════════════
+function HeroParticles() {
+  const particles = useMemo(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 1 + Math.random() * 2,
+      dur: 15 + Math.random() * 25,
+      delay: Math.random() * -30,
+      opacity: 0.1 + Math.random() * 0.2,
+    })), []);
+
+  return (
+    <div className="hero-particles">
+      {particles.map(p => (
+        <div
+          key={p.id}
+          className="particle"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            opacity: p.opacity,
+            animationDuration: `${p.dur}s`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// ANIMATED WAVEFORM VISUALIZER (hero decoration)
+// ═══════════════════════════════════════════════
+function WaveformVisualizer() {
+  const bars = 48;
+  return (
+    <div className="hero-waveform">
+      {Array.from({ length: bars }, (_, i) => {
+        const center = bars / 2;
+        const dist = Math.abs(i - center) / center;
+        const maxH = 60 * (1 - dist * 0.7);
+        return (
+          <div
+            key={i}
+            className="waveform-bar"
+            style={{
+              height: maxH,
+              animationDelay: `${i * 0.05}s`,
+              animationDuration: `${1.2 + Math.random() * 0.8}s`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+  const scrollTo = useCallback((id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMobileOpen(false);
+  }, []);
+
+  return (
+    <nav className={`noir-nav${scrolled ? " scrolled" : ""}`}>
+      <div className="nav-inner">
+        <div className="nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+          <Logo size={28} color="#4a9" />
+          <span className="nav-brand-text">NOIR</span>
+        </div>
+        <div className={`nav-links${mobileOpen ? " open" : ""}`}>
+          <a onClick={() => scrollTo("features")}>Features</a>
+          <a onClick={() => scrollTo("signal")}>How It Works</a>
+          <a onClick={() => scrollTo("pricing")}>Pricing</a>
+          <a className="nav-cta" onClick={() => scrollTo("download")}>Download</a>
+        </div>
+        <button className={`hamburger${mobileOpen ? " active" : ""}`} onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
+          <span /><span /><span />
+        </button>
+      </div>
+    </nav>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// HERO — enhanced with mockup + animations
+// ═══════════════════════════════════════════════
+function Hero() {
+  const formats = ["FLAC", "ALAC", "DSD", "WAV", "AIFF", "PCM 24-BIT", "UP TO 192KHZ"];
+  const mouse = useMouseParallax(0.015);
+
+  return (
+    <section className="hero" id="hero">
+      {/* Background layers */}
+      <HeroParticles />
+      <svg className="hero-waves" viewBox="0 0 1200 200" preserveAspectRatio="none">
+        <path className="wave w1" d="M0,100 Q150,40 300,100 T600,100 T900,100 T1200,100" />
+        <path className="wave w2" d="M0,100 Q150,160 300,100 T600,100 T900,100 T1200,100" />
+        <path className="wave w3" d="M0,100 Q100,60 200,140 T400,60 T600,140 T800,60 T1000,140 T1200,100" />
+      </svg>
+      <div className="hero-grain" />
+
+      {/* Radial glow behind mockup */}
+      <div className="hero-glow" />
+
+      <div className="hero-content">
+        {/* Text block */}
+        <div className="hero-text-block">
+          <div className="hero-overline">
+            <span className="overline-dot" />
+            <span>macOS Audio Player</span>
+          </div>
+          <h1 className="hero-title">
+            Hear everything.<br />
+            <em>Alter nothing.</em>
+          </h1>
+          <p className="hero-sub">
+            Bit-perfect audio playback for macOS. Your local files, delivered to
+            your DAC without a single bit altered.
+          </p>
+          <div className="hero-ctas" id="download">
+            <a className="btn btn-primary" href="#pricing">Buy Now — €35</a>
+            <a className="btn btn-outline" href="#pricing">Try 30 Days Free</a>
+          </div>
+          <div className="hero-formats">
+            {formats.map((f, i) => (
+              <span key={f} className="format-badge" style={{ animationDelay: `${1.0 + i * 0.08}s` }}>{f}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* App mockup with perspective */}
+        <div
+          className="hero-mockup-wrap"
+          style={{
+            transform: `perspective(1200px) rotateY(${-3 + mouse.x * 0.3}deg) rotateX(${2 + mouse.y * 0.3}deg)`,
+          }}
+        >
+          <AppMockup />
+          {/* Waveform overlay at bottom of mockup */}
+          <WaveformVisualizer />
+        </div>
+      </div>
+
+      <div className="hero-scroll-hint">
+        <svg width="16" height="24" viewBox="0 0 16 24" fill="none" stroke="#666" strokeWidth="1.5">
+          <rect x="1" y="1" width="14" height="22" rx="7" />
+          <line x1="8" y1="6" x2="8" y2="10" className="scroll-dot" />
+        </svg>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// FEATURES
+// ═══════════════════════════════════════════════
+const featureData = [
+  { icon: <IconBitPerfect />, title: "Bit-Perfect Playback", desc: "CoreAudio Integer Mode bypasses the OS mixer entirely. Your audio reaches your DAC exactly as the artist intended — zero resampling, zero alteration." },
+  { icon: <IconLightweight />, title: "Lightweight & Fast", desc: "Under 80 MB of RAM. Instant cold start. No Electron, no bloat. Built with Rust and native macOS APIs for performance that disappears." },
+  { icon: <IconLibrary />, title: "Your Library, Organized", desc: "Smart browsing by artist, album, genre, or folder. Auto-completed metadata. Playlist creation. Everything searchable, nothing hidden." },
+  { icon: <IconUniversal />, title: "Universal Compatibility", desc: "Native on Intel and Apple Silicon. Supports every major lossless format. Works with any USB DAC, AirPlay receiver, or built-in output." },
+];
+
+function Features() {
+  return (
+    <section className="features" id="features">
+      <div className="section-label">Features</div>
+      <div className="features-grid">
+        {featureData.map((f, i) => <FeatureCard key={i} {...f} delay={i * 0.12} />)}
+      </div>
+    </section>
+  );
+}
+
+function FeatureCard({ icon, title, desc, delay }) {
+  const [ref, visible] = useReveal();
+  return (
+    <div ref={ref} className={`feature-card${visible ? " visible" : ""}`} style={{ transitionDelay: `${delay}s` }}>
+      <div className="feature-icon">{icon}</div>
+      <h3>{title}</h3>
+      <p>{desc}</p>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// QUOTE
+// ═══════════════════════════════════════════════
+function Quote() {
+  const [ref, visible] = useReveal();
+  return (
+    <section className="quote-section" ref={ref}>
+      <div className="quote-grain" />
+      <div className="quote-line" />
+      <blockquote className={`quote${visible ? " visible" : ""}`}>
+        Your files. Your DAC. <em>Your rules.</em>
+      </blockquote>
+      <div className="quote-line" />
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════
+function Stats() {
+  const [ref, visible] = useReveal();
+  const ram = useCountUp(80, visible, 1000);
+  return (
+    <section className="stats" ref={ref}>
+      <div className="stats-grid">
+        <div className={`stat${visible ? " visible" : ""}`} style={{ transitionDelay: "0s" }}>
+          <span className="stat-num">&lt;{ram}<span className="stat-unit">MB</span></span>
+          <span className="stat-label">Memory Footprint</span>
+        </div>
+        <div className="stat-sep" />
+        <div className={`stat${visible ? " visible" : ""}`} style={{ transitionDelay: "0.1s" }}>
+          <span className="stat-num">0</span>
+          <span className="stat-label">Bits Altered</span>
+        </div>
+        <div className="stat-sep" />
+        <div className={`stat${visible ? " visible" : ""}`} style={{ transitionDelay: "0.2s" }}>
+          <span className="stat-num">{visible ? "24" : "0"}<span className="stat-unit">/</span>{visible ? "192" : "0"}</span>
+          <span className="stat-label">Max Resolution</span>
+        </div>
+        <div className="stat-sep" />
+        <div className={`stat${visible ? " visible" : ""}`} style={{ transitionDelay: "0.3s" }}>
+          <span className="stat-num">∞</span>
+          <span className="stat-label">DACs Supported</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// SIGNAL PATH
+// ═══════════════════════════════════════════════
+const signalSteps = [
+  { label: "Source", sub: "FLAC / DSD / ALAC", icon: "📁" },
+  { label: "Decode", sub: "Symphonia engine", icon: "⚙" },
+  { label: "Route", sub: "CoreAudio Integer", icon: "🔀" },
+  { label: "Output", sub: "Bit-perfect DAC", icon: "🎧" },
+];
+
+function SignalPath() {
+  const [ref, visible] = useReveal();
+  return (
+    <section className="signal" id="signal" ref={ref}>
+      <div className="section-label">Signal Path</div>
+      <div className="signal-pipeline">
+        {signalSteps.map((s, i) => (
+          <div key={i} className="signal-step-wrap">
+            <div className={`signal-step${visible ? " visible" : ""}`} style={{ transitionDelay: `${i * 0.15}s` }}>
+              <span className="signal-icon">{s.icon}</span>
+              <span className="signal-label">{s.label}</span>
+              <span className="signal-sub">{s.sub}</span>
+            </div>
+            {i < signalSteps.length - 1 && (
+              <div className={`signal-connector${visible ? " visible" : ""}`} style={{ transitionDelay: `${i * 0.15 + 0.1}s` }}>
+                <svg width="40" height="2" viewBox="0 0 40 2" className="connector-line">
+                  <line x1="0" y1="1" x2="40" y2="1" stroke="#4a9" strokeWidth="2" strokeDasharray="4 4" />
+                </svg>
+                <div className="connector-dot" style={{ animationDelay: `${i * 0.3}s` }} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className={`signal-integrity${visible ? " visible" : ""}`}>
+        <span className="integrity-dot" />
+        Signal integrity: <strong>100%</strong>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// PRICING TABLE
+// ═══════════════════════════════════════════════
+const pricingRows = [
+  { label: "Pricing model", noir: "One-time €35", aud: "€109/year", roon: "€155/year" },
+  { label: "Bit-perfect playback", noir: true, aud: true, roon: true },
+  { label: "DSD support", noir: true, aud: true, roon: true },
+  { label: "Account required", noir: false, aud: true, roon: true },
+  { label: "Internet required", noir: false, aud: "Activation", roon: "Always" },
+  { label: "Lightweight (<100 MB)", noir: true, aud: false, roon: false },
+  { label: "Open formats only", noir: true, aud: "Partial", roon: "Partial" },
+];
+function CellValue({ v }) {
+  if (v === true) return <span className="check yes">✓</span>;
+  if (v === false) return <span className="check no">✕</span>;
+  return <span className="check text">{v}</span>;
+}
+
+function Pricing() {
+  const [ref, visible] = useReveal();
+  return (
+    <section className="pricing" id="pricing" ref={ref}>
+      <div className="section-label">Compare</div>
+      <div className={`pricing-table-wrap${visible ? " visible" : ""}`}>
+        <div className="pricing-table-scroll">
+          <table className="pricing-table">
+            <thead>
+              <tr>
+                <th className="pt-corner" />
+                <th className="pt-head pt-noir">
+                  <Logo size={20} color="#4a9" />
+                  <span>Noir</span>
+                  <span className="pt-badge">Recommended</span>
+                </th>
+                <th className="pt-head">Audirvāna</th>
+                <th className="pt-head">Roon</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pricingRows.map((r, i) => (
+                <tr key={i}>
+                  <td className="pt-label">{r.label}</td>
+                  <td className="pt-val pt-noir-col"><CellValue v={r.noir} /></td>
+                  <td className="pt-val"><CellValue v={r.aud} /></td>
+                  <td className="pt-val"><CellValue v={r.roon} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p className="pricing-note">30-day trial includes all features. No account or credit card required.</p>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// EMAIL CTA
+// ═══════════════════════════════════════════════
+function EmailCTA() {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [ref, visible] = useReveal();
+  const handle = (e) => { e.preventDefault(); if (email.includes("@")) setSubmitted(true); };
+
+  return (
+    <section className="email-cta" ref={ref}>
+      <div className={`email-inner${visible ? " visible" : ""}`}>
+        <h2>Join the beta.</h2>
+        <p>Be first to hear your music the way it was meant to sound.</p>
+        {submitted ? (
+          <div className="email-thanks"><span className="thanks-check">✓</span> Thanks! We'll be in touch.</div>
+        ) : (
+          <form className="email-form" onSubmit={handle}>
+            <input type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <button type="submit">Submit</button>
+          </form>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// FOOTER
+// ═══════════════════════════════════════════════
+function Footer() {
+  return (
+    <footer className="footer">
+      <div className="footer-grid">
+        <div className="footer-col footer-brand">
+          <div className="footer-logo"><Logo size={24} color="#4a9" /><span>NOIR</span></div>
+          <p>Bit-perfect audio playback for macOS. Built with Rust, designed for audiophiles.</p>
+        </div>
+        <div className="footer-col">
+          <h4>Product</h4>
+          <a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#download">Download</a>
+        </div>
+        <div className="footer-col">
+          <h4>Resources</h4>
+          <a href="#">Docs</a><a href="#">Support</a><a href="#">FAQ</a>
+        </div>
+        <div className="footer-col">
+          <h4>Legal</h4>
+          <a href="#">Privacy</a><a href="#">Terms</a>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <span>© 2026 Noir Audio</span>
+        <span className="footer-craft">Crafted for those who listen.</span>
+      </div>
+    </footer>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════
+const NOISE_SVG = "data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E";
+
+const styles = `
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+body {
+  font-family:'Outfit',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#0a0a0a; color:#fff; line-height:1.6;
+  overflow-x:hidden; -webkit-font-smoothing:antialiased;
+}
+a { color:inherit; text-decoration:none; cursor:pointer; }
+.section-label {
+  font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500;
+  letter-spacing:3px; text-transform:uppercase; color:#4a9;
+  margin-bottom:48px; text-align:center;
+}
+
+/* ─── NAV ─── */
+.noir-nav { position:fixed; top:0; left:0; right:0; z-index:100; transition:background .4s,border-color .4s; border-bottom:1px solid transparent; }
+.noir-nav.scrolled { background:rgba(10,10,10,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom-color:#1a1a1a; }
+.nav-inner { max-width:1100px; margin:0 auto; padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+.nav-brand { display:flex; align-items:center; gap:10px; cursor:pointer; }
+.nav-brand-text { font-weight:600; font-size:18px; letter-spacing:4px; }
+.nav-links { display:flex; align-items:center; gap:32px; }
+.nav-links a { font-weight:300; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:#888; transition:color .2s; }
+.nav-links a:hover { color:#fff; }
+.nav-cta { background:#4a9!important; color:#000!important; padding:8px 20px!important; border-radius:4px; font-weight:500!important; font-size:12px!important; letter-spacing:1px; transition:background .2s,transform .2s!important; }
+.nav-cta:hover { background:#5cb!important; transform:translateY(-1px); }
+.hamburger { display:none; background:none; border:none; cursor:pointer; width:28px; height:20px; position:relative; z-index:101; }
+.hamburger span { display:block; width:100%; height:1.5px; background:#fff; position:absolute; left:0; transition:all .3s; }
+.hamburger span:nth-child(1){top:0} .hamburger span:nth-child(2){top:50%;transform:translateY(-50%)} .hamburger span:nth-child(3){bottom:0}
+.hamburger.active span:nth-child(1){top:50%;transform:translateY(-50%) rotate(45deg)} .hamburger.active span:nth-child(2){opacity:0} .hamburger.active span:nth-child(3){bottom:50%;transform:translateY(50%) rotate(-45deg)}
+@media(max-width:768px){
+  .hamburger{display:block}
+  .nav-links{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,10,0.98);flex-direction:column;justify-content:center;gap:40px;opacity:0;pointer-events:none;transition:opacity .3s}
+  .nav-links.open{opacity:1;pointer-events:all}
+  .nav-links a{font-size:20px;letter-spacing:3px}
+  .nav-cta{font-size:16px!important;padding:14px 32px!important}
+  .nav-inner{height:56px}
+}
+
+/* ─── HERO ─── */
+.hero {
+  min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; text-align:center; padding:100px 24px 60px;
+  position:relative; overflow:hidden;
+}
+
+/* Particles */
+.hero-particles { position:absolute; inset:0; pointer-events:none; z-index:0; }
+.particle {
+  position:absolute; background:#4a9; border-radius:50%;
+  animation:particleFloat linear infinite;
+}
+@keyframes particleFloat {
+  0% { transform:translateY(0) translateX(0); opacity:0; }
+  10% { opacity:1; }
+  90% { opacity:1; }
+  100% { transform:translateY(-100vh) translateX(30px); opacity:0; }
+}
+
+/* Waves */
+.hero-waves { position:absolute; top:50%; left:0; width:100%; height:180px; transform:translateY(-50%); opacity:0.06; pointer-events:none; z-index:0; }
+.wave { fill:none; stroke-linecap:round; stroke-width:2.5; }
+.w1 { stroke:#4a9; stroke-width:3; animation:waveMove1 4s ease-in-out infinite; }
+.w2 { stroke:#5cb; stroke-width:2; animation:waveMove2 5s ease-in-out infinite; }
+.w3 { stroke:#3a8; stroke-width:1.5; animation:waveMove3 6s ease-in-out infinite; }
+@keyframes waveMove1 { 0%,100%{d:path("M0,100 Q150,40 300,100 T600,100 T900,100 T1200,100")} 50%{d:path("M0,100 Q150,160 300,100 T600,100 T900,100 T1200,100")} }
+@keyframes waveMove2 { 0%,100%{d:path("M0,100 Q200,150 400,100 T800,100 T1200,100")} 50%{d:path("M0,100 Q200,50 400,100 T800,100 T1200,100")} }
+@keyframes waveMove3 { 0%,100%{d:path("M0,100 Q100,60 200,140 T400,60 T600,140 T800,60 T1000,140 T1200,100")} 50%{d:path("M0,100 Q100,140 200,60 T400,140 T600,60 T800,140 T1000,60 T1200,100")} }
+
+.hero-grain { position:absolute; inset:0; background-image:url("${NOISE_SVG}"); background-repeat:repeat; background-size:256px; pointer-events:none; opacity:0.5; z-index:0; }
+.hero-glow {
+  position:absolute; bottom:-10%; left:50%; transform:translateX(-50%);
+  width:800px; height:500px; border-radius:50%;
+  background:radial-gradient(ellipse,rgba(68,170,153,0.08) 0%,transparent 70%);
+  pointer-events:none; z-index:0;
+}
+
+.hero-content {
+  position:relative; z-index:1; max-width:1100px; width:100%;
+  display:flex; flex-direction:column; align-items:center; gap:56px;
+}
+
+/* Hero text */
+.hero-text-block { max-width:680px; animation:heroIn 1s ease-out forwards; opacity:0; }
+@keyframes heroIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+.hero-overline {
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500;
+  letter-spacing:2px; text-transform:uppercase; color:#888;
+  margin-bottom:20px; animation:fadeIn 0.6s ease-out 0.3s both;
+}
+.overline-dot { width:6px; height:6px; border-radius:50%; background:#4a9; animation:pulse 2s ease-in-out infinite; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.hero-title {
+  font-family:'Instrument Serif',Georgia,serif; font-weight:400;
+  font-size:clamp(38px,7vw,76px); line-height:1.08; margin-bottom:24px; letter-spacing:-1px;
+}
+.hero-title em { font-style:italic; color:#4a9; }
+.hero-sub { font-weight:300; font-size:clamp(15px,2vw,18px); color:#888; max-width:540px; margin:0 auto 40px; line-height:1.7; }
+.hero-ctas { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:48px; }
+.btn { font-family:'Outfit',sans-serif; font-weight:500; font-size:14px; letter-spacing:0.5px; padding:14px 32px; border-radius:4px; cursor:pointer; transition:all .25s; display:inline-block; }
+.btn-primary { background:#4a9; color:#000; }
+.btn-primary:hover { background:#5cb; transform:translateY(-2px); box-shadow:0 8px 24px rgba(68,170,153,0.2); }
+.btn-outline { background:transparent; color:#4a9; border:1px solid #4a9; }
+.btn-outline:hover { background:rgba(68,170,153,0.08); transform:translateY(-2px); }
+.hero-formats { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+.format-badge {
+  font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:400;
+  letter-spacing:1px; color:#666; border:1px solid #222; padding:6px 14px;
+  border-radius:100px; opacity:0; animation:badgeIn .4s ease-out forwards;
+}
+@keyframes badgeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* Hero mockup */
+.hero-mockup-wrap {
+  width:100%; max-width:820px;
+  transition:transform 0.1s ease-out;
+  animation:mockupIn 1.2s ease-out 0.5s both;
+}
+@keyframes mockupIn {
+  from { opacity:0; transform:perspective(1200px) rotateY(-3deg) rotateX(4deg) translateY(40px) scale(0.95); }
+  to { opacity:1; transform:perspective(1200px) rotateY(-3deg) rotateX(2deg) translateY(0) scale(1); }
+}
+
+.hero-scroll-hint { position:absolute; bottom:32px; left:50%; transform:translateX(-50%); opacity:0.4; animation:scrollBounce 2s ease-in-out infinite; }
+@keyframes scrollBounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+.scroll-dot { animation:scrollDot 2s ease-in-out infinite; }
+@keyframes scrollDot { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(4px)} }
+
+@media(max-width:768px){
+  .hero{padding:80px 20px 40px; min-height:auto;}
+  .hero-ctas{flex-direction:column;align-items:center}
+  .btn{width:100%;max-width:280px;text-align:center}
+  .hero-formats{overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start;padding:0 20px;-webkit-overflow-scrolling:touch}
+  .hero-formats::-webkit-scrollbar{display:none}
+  .format-badge{flex-shrink:0}
+  .hero-mockup-wrap{transform:none!important}
+  .hero-glow{display:none}
+}
+
+/* ─── APP MOCKUP ─── */
+.app-mockup {
+  background:#111; border-radius:12px; overflow:hidden;
+  border:1px solid #222; box-shadow:0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+  position:relative;
+}
+.mock-titlebar {
+  height:36px; background:#0a0a0a; display:flex; align-items:center; padding:0 14px;
+  border-bottom:1px solid #1a1a1a; gap:12px;
+}
+.mock-dots { display:flex; gap:6px; }
+.mock-dots span { width:10px; height:10px; border-radius:50%; }
+.mock-title-text { font-family:'IBM Plex Mono',monospace; font-size:11px; color:#555; letter-spacing:1px; }
+.mock-body { display:flex; height:340px; }
+.mock-sidebar {
+  width:170px; background:#0e0e0e; border-right:1px solid #1a1a1a;
+  padding:14px 12px; flex-shrink:0; overflow:hidden;
+}
+.mock-sidebar-logo { display:flex; align-items:center; gap:6px; margin-bottom:16px; font-family:'Outfit',sans-serif; font-weight:600; font-size:12px; letter-spacing:2px; }
+.mock-sidebar-section { margin-bottom:16px; }
+.mock-sidebar-label { font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:2px; color:#444; text-transform:uppercase; display:block; margin-bottom:8px; }
+.mock-sidebar-item {
+  display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px;
+  font-size:11px; color:#666; cursor:pointer; transition:all .15s; margin-bottom:2px;
+}
+.mock-sidebar-item.active { background:rgba(68,170,153,0.1); color:#4a9; }
+.mock-sidebar-item:hover { color:#aaa; }
+
+.mock-main { flex:1; padding:14px 16px; overflow:hidden; }
+.mock-albums-label { font-family:'Outfit',sans-serif; font-size:12px; font-weight:500; color:#888; margin-bottom:10px; letter-spacing:0.5px; }
+.mock-album-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:12px; }
+.mock-album-card { text-align:center; }
+.mock-album-cover {
+  aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; color:rgba(255,255,255,0.3); margin-bottom:4px;
+  transition:transform .2s; cursor:pointer;
+}
+.mock-album-cover:hover { transform:scale(1.05); }
+.mock-album-title { font-size:9px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mock-album-artist { font-size:8px; color:#555; }
+
+.mock-tracklist { display:flex; flex-direction:column; gap:1px; }
+.mock-track {
+  display:flex; align-items:center; gap:10px; padding:5px 8px;
+  border-radius:4px; transition:background .15s; cursor:pointer;
+}
+.mock-track:hover { background:rgba(255,255,255,0.03); }
+.mock-track.playing { background:rgba(68,170,153,0.06); }
+.mock-track-num { font-family:'IBM Plex Mono',monospace; font-size:10px; color:#444; width:20px; text-align:center; flex-shrink:0; }
+.mock-track.playing .mock-track-num { color:#4a9; }
+.mock-track-info { flex:1; min-width:0; }
+.mock-track-title { display:block; font-size:11px; color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mock-track.playing .mock-track-title { color:#4a9; }
+.mock-track-artist { display:block; font-size:9px; color:#555; }
+.mock-track-dur { font-family:'IBM Plex Mono',monospace; font-size:10px; color:#444; flex-shrink:0; }
+
+/* EQ bars for "now playing" */
+.mock-eq { display:inline-flex; align-items:flex-end; gap:1.5px; height:12px; }
+.mock-eq span {
+  width:2.5px; background:#4a9; border-radius:1px;
+  animation:eqBounce 0.8s ease-in-out infinite alternate;
+}
+.mock-eq span:nth-child(1) { height:40%; animation-delay:0s; }
+.mock-eq span:nth-child(2) { height:80%; animation-delay:0.2s; }
+.mock-eq span:nth-child(3) { height:60%; animation-delay:0.4s; }
+@keyframes eqBounce {
+  0% { transform:scaleY(0.3); }
+  100% { transform:scaleY(1); }
+}
+
+/* Player bar */
+.mock-player {
+  height:52px; background:#0a0a0a; border-top:1px solid #1a1a1a;
+  display:flex; align-items:center; padding:0 14px; gap:16px;
+}
+.mock-player-left { display:flex; align-items:center; gap:10px; width:180px; }
+.mock-player-title { font-size:11px; color:#ddd; display:block; }
+.mock-player-artist { font-size:9px; color:#555; display:block; }
+.mock-player-center { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.mock-player-controls { display:flex; align-items:center; gap:16px; }
+.mock-play-btn {
+  width:28px; height:28px; border-radius:50%; background:#fff;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+}
+.mock-progress-row { display:flex; align-items:center; gap:6px; width:100%; max-width:360px; }
+.mock-time { font-family:'IBM Plex Mono',monospace; font-size:9px; color:#555; }
+.mock-progress-bar { flex:1; height:3px; background:#222; border-radius:2px; overflow:hidden; position:relative; }
+.mock-progress-fill {
+  width:34%; height:100%; background:#4a9; border-radius:2px;
+  position:relative;
+}
+.mock-progress-fill::after {
+  content:''; position:absolute; right:-4px; top:50%; transform:translateY(-50%);
+  width:8px; height:8px; background:#fff; border-radius:50%; opacity:0;
+  transition:opacity .2s;
+}
+.mock-progress-bar:hover .mock-progress-fill::after { opacity:1; }
+.mock-player-right { display:flex; align-items:center; gap:8px; width:140px; justify-content:flex-end; }
+.mock-quality-badge {
+  font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:500;
+  color:#4a9; background:rgba(68,170,153,0.1); padding:2px 6px;
+  border-radius:3px; letter-spacing:0.5px;
+}
+
+@media(max-width:768px){
+  .mock-sidebar{display:none}
+  .mock-album-grid{grid-template-columns:repeat(3,1fr)}
+  .mock-body{height:260px}
+  .mock-player-right{display:none}
+  .mock-player-left{width:auto}
+}
+@media(max-width:480px){
+  .mock-album-grid{grid-template-columns:repeat(3,1fr)}
+  .mock-body{height:220px}
+}
+
+/* Waveform visualizer */
+.hero-waveform {
+  position:absolute; bottom:52px; left:170px; right:0;
+  height:40px; display:flex; align-items:flex-end; justify-content:center;
+  gap:2px; padding:0 16px; pointer-events:none; opacity:0.15;
+}
+.waveform-bar {
+  flex:1; max-width:4px; background:#4a9; border-radius:2px 2px 0 0;
+  animation:waveformPulse ease-in-out infinite alternate;
+  transform-origin:bottom;
+}
+@keyframes waveformPulse {
+  0%{transform:scaleY(0.2)} 100%{transform:scaleY(1)}
+}
+@media(max-width:768px){
+  .hero-waveform{left:0}
+}
+
+/* ─── FEATURES ─── */
+.features { padding:120px 24px; max-width:1100px; margin:0 auto; }
+.features-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+.feature-card {
+  background:#111; border-left:3px solid #4a9; padding:36px 32px;
+  border-radius:0 8px 8px 0; opacity:0; transform:translateY(20px);
+  transition:opacity .6s ease,transform .6s ease;
+}
+.feature-card.visible { opacity:1; transform:translateY(0); }
+.feature-icon {
+  margin-bottom:16px; width:44px; height:44px; display:flex;
+  align-items:center; justify-content:center;
+  background:rgba(68,170,153,0.08); border-radius:8px;
+}
+.feature-card h3 { font-weight:600; font-size:18px; margin-bottom:10px; letter-spacing:0.3px; }
+.feature-card p { font-weight:300; font-size:14px; color:#888; line-height:1.7; }
+@media(max-width:768px){
+  .features{padding:80px 20px}
+  .features-grid{grid-template-columns:1fr}
+}
+
+/* ─── QUOTE ─── */
+.quote-section { padding:100px 24px; text-align:center; position:relative; background:#0e0e0e; }
+.quote-grain { position:absolute; inset:0; background-image:url("${NOISE_SVG}"); background-repeat:repeat; background-size:256px; pointer-events:none; opacity:0.6; }
+.quote-line { width:60px; height:1px; background:#333; margin:0 auto; }
+.quote {
+  font-family:'Instrument Serif',Georgia,serif; font-weight:400; font-style:italic;
+  font-size:clamp(28px,5vw,48px); padding:48px 24px; color:#fff;
+  position:relative; opacity:0; transform:scale(0.96); transition:opacity .8s,transform .8s;
+}
+.quote.visible { opacity:1; transform:scale(1); }
+.quote em { color:#4a9; font-style:italic; }
+
+/* ─── STATS ─── */
+.stats { padding:100px 24px; max-width:1000px; margin:0 auto; }
+.stats-grid { display:flex; align-items:center; justify-content:center; }
+.stat { flex:1; text-align:center; padding:20px; opacity:0; transform:translateY(16px); transition:opacity .6s ease,transform .6s ease; }
+.stat.visible { opacity:1; transform:translateY(0); }
+.stat-num { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(48px,8vw,80px); font-weight:400; display:block; line-height:1; letter-spacing:-2px; }
+.stat-unit { font-size:0.45em; color:#888; letter-spacing:0; }
+.stat-label { font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:400; letter-spacing:2px; text-transform:uppercase; color:#555; margin-top:12px; display:block; }
+.stat-sep { width:1px; height:60px; background:#222; }
+@media(max-width:768px){
+  .stats{padding:60px 20px}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+  .stat-sep{display:none}
+}
+
+/* ─── SIGNAL PATH ─── */
+.signal { padding:120px 24px; max-width:1000px; margin:0 auto; }
+.signal-pipeline { display:flex; align-items:center; justify-content:center; }
+.signal-step-wrap { display:flex; align-items:center; }
+.signal-step {
+  background:#151515; border:1px solid #222; border-radius:12px;
+  padding:24px 28px; text-align:center; min-width:140px;
+  opacity:0; transform:translateY(12px); transition:opacity .5s ease,transform .5s ease;
+}
+.signal-step.visible { opacity:1; transform:translateY(0); }
+.signal-icon { font-size:24px; display:block; margin-bottom:10px; }
+.signal-label { font-weight:600; font-size:15px; display:block; margin-bottom:4px; }
+.signal-sub { font-family:'IBM Plex Mono',monospace; font-size:11px; color:#555; letter-spacing:0.5px; }
+.signal-connector { display:flex; align-items:center; justify-content:center; width:56px; position:relative; opacity:0; transition:opacity .5s ease; }
+.signal-connector.visible { opacity:1; }
+.connector-dot { position:absolute; width:6px; height:6px; background:#4a9; border-radius:50%; animation:flowDot 1.5s ease-in-out infinite; box-shadow:0 0 8px rgba(68,170,153,0.6); }
+@keyframes flowDot { 0%{left:0;opacity:0} 20%{opacity:1} 80%{opacity:1} 100%{left:calc(100% - 6px);opacity:0} }
+.signal-integrity { text-align:center; margin-top:40px; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#666; letter-spacing:1px; opacity:0; transition:opacity .6s ease .6s; }
+.signal-integrity.visible { opacity:1; }
+.integrity-dot { display:inline-block; width:8px; height:8px; background:#4a9; border-radius:50%; margin-right:8px; vertical-align:middle; animation:pulse 2s ease-in-out infinite; box-shadow:0 0 8px rgba(68,170,153,0.5); }
+@keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 8px rgba(68,170,153,0.5)} 50%{opacity:0.5;box-shadow:0 0 16px rgba(68,170,153,0.8)} }
+@media(max-width:768px){
+  .signal{padding:80px 20px}
+  .signal-pipeline{flex-direction:column}
+  .signal-step-wrap{flex-direction:column}
+  .signal-connector{width:auto;height:40px;transform:rotate(90deg)}
+  .signal-step{min-width:200px}
+}
+
+/* ─── PRICING ─── */
+.pricing { padding:120px 24px; max-width:900px; margin:0 auto; }
+.pricing-table-wrap { opacity:0; transform:translateY(16px); transition:opacity .7s ease,transform .7s ease; }
+.pricing-table-wrap.visible { opacity:1; transform:translateY(0); }
+.pricing-table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.pricing-table { width:100%; border-collapse:collapse; min-width:560px; }
+.pt-corner { background:transparent; }
+.pt-head { font-weight:400; font-size:14px; color:#888; padding:20px 16px; text-align:center; border-bottom:1px solid #222; }
+.pt-head.pt-noir { color:#fff; background:#151515; border-top:3px solid #4a9; border-radius:8px 8px 0 0; }
+.pt-head.pt-noir span { display:block; }
+.pt-head.pt-noir svg { display:inline-block; vertical-align:middle; margin-bottom:4px; }
+.pt-badge { font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#4a9; margin-top:4px; }
+.pt-label { font-weight:300; font-size:13px; color:#888; padding:14px 16px; border-bottom:1px solid #151515; white-space:nowrap; }
+.pt-val { text-align:center; padding:14px 16px; border-bottom:1px solid #151515; font-size:14px; }
+.pt-noir-col { background:#111; }
+.check.yes { color:#4a9; font-weight:600; }
+.check.no { color:#444; }
+.check.text { color:#888; font-family:'IBM Plex Mono',monospace; font-size:12px; }
+.pricing-note { text-align:center; font-size:13px; color:#555; margin-top:32px; font-weight:300; }
+@media(max-width:768px){ .pricing{padding:80px 16px} }
+
+/* ─── EMAIL CTA ─── */
+.email-cta { padding:100px 24px; background:#0e0e0e; }
+.email-inner { max-width:500px; margin:0 auto; text-align:center; opacity:0; transform:translateY(16px); transition:opacity .7s ease,transform .7s ease; }
+.email-inner.visible { opacity:1; transform:translateY(0); }
+.email-inner h2 { font-family:'Instrument Serif',Georgia,serif; font-weight:400; font-style:italic; font-size:clamp(28px,4vw,40px); margin-bottom:12px; }
+.email-inner p { font-weight:300; font-size:15px; color:#888; margin-bottom:32px; }
+.email-form { display:flex; gap:0; border-radius:4px; overflow:hidden; border:1px solid #222; }
+.email-form input { flex:1; padding:14px 16px; background:#1a1a1a; color:#fff; border:none; font-family:'Outfit',sans-serif; font-size:14px; outline:none; }
+.email-form input::placeholder { color:#555; }
+.email-form input:focus { background:#1e1e1e; }
+.email-form button { padding:14px 24px; background:#4a9; color:#000; border:none; font-family:'Outfit',sans-serif; font-weight:500; font-size:14px; cursor:pointer; transition:background .2s; letter-spacing:0.5px; }
+.email-form button:hover { background:#5cb; }
+.email-thanks { font-family:'IBM Plex Mono',monospace; font-size:14px; color:#4a9; padding:20px; animation:fadeUp .4s ease-out; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@media(max-width:768px){
+  .email-cta{padding:60px 20px}
+  .email-form{flex-direction:column}
+  .email-form input{border-bottom:1px solid #222}
+}
+
+/* ─── FOOTER ─── */
+.footer { padding:80px 24px 40px; border-top:1px solid #151515; }
+.footer-grid { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px; }
+.footer-brand p { font-weight:300; font-size:13px; color:#555; line-height:1.7; margin-top:12px; max-width:240px; }
+.footer-logo { display:flex; align-items:center; gap:8px; font-weight:600; font-size:16px; letter-spacing:3px; }
+.footer-col h4 { font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:16px; }
+.footer-col a { display:block; font-weight:300; font-size:13px; color:#555; padding:4px 0; transition:color .2s; }
+.footer-col a:hover { color:#fff; }
+.footer-bottom { max-width:1100px; margin:48px auto 0; padding-top:24px; border-top:1px solid #151515; display:flex; justify-content:space-between; font-size:12px; color:#444; font-weight:300; }
+.footer-craft { font-style:italic; color:#555; }
+@media(max-width:768px){
+  .footer{padding:60px 20px 32px}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  .footer-brand{grid-column:1/-1}
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center}
+}
+@media(max-width:480px){ .footer-grid{grid-template-columns:1fr} }
+`;
+
+// ═══════════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════════
+function NoirLanding() {
+  useFonts();
+  return (
+    <React.Fragment>
+      <style>{styles}</style>
+      <Nav />
+      <Hero />
+      <Features />
+      <Quote />
+      <Stats />
+      <SignalPath />
+      <Pricing />
+      <EmailCTA />
+      <Footer />
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<NoirLanding />);
+  </script>
+</body>
+</html>

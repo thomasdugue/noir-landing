@@ -305,7 +305,7 @@ function Nav() {
         <div className={`nav__links${menuOpen ? " open" : ""}`}>
           <a onClick={() => go("about")}>About</a>
           <a onClick={() => go("features")}>Features</a>
-          <a onClick={() => go("specs")}>Specs</a>
+          <a onClick={() => go("compare")}>Compare</a>
           <a className="nav__cta" onClick={() => go("join")}>Join Beta</a>
         </div>
         <button className={`burger${menuOpen ? " active" : ""}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
@@ -493,6 +493,67 @@ function Signal() {
 }
 
 // ═══════════════════════════════════════════════
+// COMPARE TABLE
+// ═══════════════════════════════════════════════
+const compareRows = [
+  { label: "PRICE", noir: "€35 once", aud: "€109/yr", roon: "€155/yr" },
+  { label: "BIT-PERFECT", noir: true, aud: true, roon: true },
+  { label: "DSD NATIVE", noir: true, aud: true, roon: true },
+  { label: "ACCOUNT REQUIRED", noir: false, aud: true, roon: true },
+  { label: "INTERNET REQUIRED", noir: false, aud: "ACTIVATION", roon: "ALWAYS" },
+  { label: "MEMORY", noir: "< 80 MB", aud: "~ 800 MB", roon: "~ 1.5 GB" },
+  { label: "OPEN SOURCE ENGINE", noir: true, aud: false, roon: false },
+  { label: "SUBSCRIPTION", noir: false, aud: true, roon: true },
+];
+
+function CV({ v }) {
+  if (v === true) return <span className="cmp__yes">YES</span>;
+  if (v === false) return <span className="cmp__no">NO</span>;
+  return <span className="cmp__txt">{v}</span>;
+}
+
+function Compare() {
+  const [r, vis] = useReveal();
+  return (
+    <section className="cmp" id="compare" ref={r}>
+      <div className="cmp__head">
+        <span className="label">04</span>
+        <span className="label">Compare</span>
+      </div>
+      <div className={`cmp__wrap${vis ? " vis" : ""}`}>
+        <div className="cmp__scroll">
+          <table className="cmp__table">
+            <thead>
+              <tr>
+                <th className="cmp__corner" />
+                <th className="cmp__th cmp__th--noir">
+                  NOIR<span className="cmp__badge">BETA</span>
+                </th>
+                <th className="cmp__th">AUDIRVĀNA</th>
+                <th className="cmp__th">ROON</th>
+              </tr>
+            </thead>
+            <tbody>
+              {compareRows.map((row, i) => (
+                <tr key={i} className="cmp__row">
+                  <td className="cmp__label">{row.label}</td>
+                  <td className="cmp__val cmp__val--noir"><CV v={row.noir} /></td>
+                  <td className="cmp__val"><CV v={row.aud} /></td>
+                  <td className="cmp__val"><CV v={row.roon} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="cmp__note">
+          Beta testers receive the final release for free. No credit card required.
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
 // QUOTE
 // ═══════════════════════════════════════════════
 function Quote() {
@@ -522,7 +583,7 @@ function BetaCTA() {
   return (
     <section className="beta" id="join" ref={r}>
       <div className={`beta__inner${v ? " vis" : ""}`}>
-        <div className="beta__num">05</div>
+        <div className="beta__num">06</div>
         <h2 className="beta__h2">Help us ship.</h2>
         <p className="beta__p">
           Noir is feature-complete and launching soon. We need audiophiles to test edge cases,
@@ -772,6 +833,50 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   .signal__arrow{transform:rotate(90deg)}
 }
 
+/* ─── COMPARE ─── */
+.cmp{padding:100px 32px;max-width:900px;margin:0 auto}
+.cmp__head{display:flex;gap:40px;margin-bottom:60px}
+.cmp__wrap{opacity:0;transform:translateY(16px);transition:all .7s ease}
+.cmp__wrap.vis{opacity:1;transform:translateY(0)}
+.cmp__scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cmp__scroll::-webkit-scrollbar{height:2px}
+.cmp__scroll::-webkit-scrollbar-track{background:#000}
+.cmp__scroll::-webkit-scrollbar-thumb{background:#222}
+.cmp__table{width:100%;border-collapse:collapse;min-width:540px}
+.cmp__corner{background:transparent;border-bottom:1px solid #111}
+.cmp__th{
+  font-size:10px;letter-spacing:3px;font-weight:400;color:#333;
+  padding:20px 16px;text-align:center;border-bottom:1px solid #111;
+}
+.cmp__th--noir{
+  color:#fff;border-top:1px solid #fff;position:relative;
+}
+.cmp__badge{
+  display:block;font-size:8px;letter-spacing:2px;color:#555;margin-top:4px;font-weight:400;
+}
+.cmp__row{transition:background .15s}
+.cmp__row:hover{background:rgba(255,255,255,0.01)}
+.cmp__label{
+  font-size:10px;letter-spacing:2px;color:#333;padding:14px 16px;
+  border-bottom:1px solid #080808;white-space:nowrap;font-weight:400;
+}
+.cmp__val{
+  text-align:center;padding:14px 16px;border-bottom:1px solid #080808;
+  font-size:11px;letter-spacing:1px;font-weight:300;
+}
+.cmp__val--noir{background:rgba(255,255,255,0.015)}
+.cmp__yes{color:#fff;font-weight:400}
+.cmp__no{color:#333}
+.cmp__txt{color:#555;font-size:10px;letter-spacing:1px}
+.cmp__note{
+  font-size:10px;color:#333;letter-spacing:1px;margin-top:24px;text-align:center;font-weight:300;
+}
+
+@media(max-width:768px){
+  .cmp{padding:60px 20px}
+  .cmp__head{gap:20px;margin-bottom:40px}
+}
+
 /* ─── QUOTE ─── */
 .quote{padding:120px 32px;text-align:center}
 .quote__text{
@@ -840,6 +945,7 @@ function App() {
       <Features />
       <Specs />
       <Signal />
+      <Compare />
       <Quote />
       <BetaCTA />
       <Footer />

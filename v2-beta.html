@@ -480,22 +480,38 @@ function Hero() {
       <div className="hero__content">
         <div className="hero__tag">
           <span className="hero__dot" />
-          <TypedText text="BETA — macOS Audio Player" delay={300} speed={30} />
+          <TypedText text="BETA PROGRAM — NOW OPEN" delay={300} speed={30} />
         </div>
         <h1 className="hero__h1">
           <span className="hero__line hero__line--1">
-            Hear everything.
+            Hear everything
           </span>
           <span className="hero__line hero__line--2">
-            Alter nothing.
+            Alter nothing
           </span>
         </h1>
         <p className="hero__p">
-          Bit-perfect lossless playback for macOS. No resampling. No subscription.<br/>
-          Launching soon — we need beta testers now.
+          The lossless audio player macOS deserves — built in Rust, launching soon.<br/>
+          We need 100 beta testers before release.
         </p>
+        <div className="hero__countdown">
+          <div className="hero__countdown-item">
+            <span className="hero__countdown-val">100</span>
+            <span className="hero__countdown-label">SPOTS</span>
+          </div>
+          <div className="hero__countdown-sep" />
+          <div className="hero__countdown-item">
+            <span className="hero__countdown-val">Q1</span>
+            <span className="hero__countdown-label">LAUNCH</span>
+          </div>
+          <div className="hero__countdown-sep" />
+          <div className="hero__countdown-item">
+            <span className="hero__countdown-val">€0</span>
+            <span className="hero__countdown-label">FOR TESTERS</span>
+          </div>
+        </div>
         <div className="hero__actions">
-          <a className="btn-main" href="#join">Join the Beta →</a>
+          <a className="btn-main btn-main--pulse" href="#join">Join the Beta →</a>
           <a className="btn-ghost" href="#about">How it works ↓</a>
         </div>
       </div>
@@ -894,9 +910,19 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   opacity:0;animation:fadeIn 0.8s ease-out 1s both;
 }
 
+.hero__countdown{
+  display:flex;align-items:center;justify-content:center;gap:24px;
+  margin-bottom:40px;
+  opacity:0;animation:fadeIn 0.8s ease-out 1.1s both;
+}
+.hero__countdown-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.hero__countdown-val{font-size:28px;font-weight:200;letter-spacing:-1px;line-height:1}
+.hero__countdown-label{font-size:8px;letter-spacing:3px;color:#555}
+.hero__countdown-sep{width:1px;height:32px;background:#222}
+
 .hero__actions{
   display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
-  opacity:0;animation:fadeIn 0.8s ease-out 1.2s both;
+  opacity:0;animation:fadeIn 0.8s ease-out 1.3s both;
 }
 .btn-main{
   font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:2px;
@@ -904,7 +930,9 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   padding:14px 28px;background:#fff;color:#000;
   border-radius:2px;transition:all .25s;
 }
-.btn-main:hover{background:#ddd;transform:translateY(-1px)}
+.btn-main--pulse{animation:fadeIn 0.8s ease-out 1.3s both,btnPulse 2.5s ease-in-out 2.5s infinite}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 0 6px rgba(255,255,255,0.08)}}
+.btn-main:hover{background:#ddd;transform:translateY(-1px);animation:none}
 .btn-ghost{
   font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:2px;
   text-transform:uppercase;font-weight:400;
@@ -925,6 +953,9 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 @media(max-width:768px){
   .hero__h1{letter-spacing:-1px}
+  .hero__countdown{gap:16px}
+  .hero__countdown-val{font-size:22px}
+  .hero__countdown-sep{height:24px}
   .hero__actions{flex-direction:column;align-items:center}
   .btn-main,.btn-ghost{width:100%;max-width:260px;text-align:center}
   .hero__footer{gap:12px}

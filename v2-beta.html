@@ -898,9 +898,9 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 .hero__h1{
   font-family:'Geist Mono','Space Mono',monospace;
-  font-weight:200;font-size:clamp(42px,9vw,96px);
-  line-height:1.05;letter-spacing:-3px;
-  margin-bottom:32px;
+  font-weight:200;font-size:clamp(32px,5.8vw,72px);
+  line-height:1.1;letter-spacing:-2px;
+  margin-bottom:32px;white-space:nowrap;
 }
 .hero__line{opacity:0;animation:slideUp 0.8s ease-out forwards}
 .hero__line--1{animation-delay:0.5s}
@@ -956,7 +956,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 
 @media(max-width:768px){
-  .hero__h1{letter-spacing:-1px}
+  .hero__h1{letter-spacing:-1px;white-space:normal;font-size:clamp(28px,8vw,48px)}
   .hero__countdown{gap:16px}
   .hero__countdown-val{font-size:22px}
   .hero__countdown-sep{height:24px}

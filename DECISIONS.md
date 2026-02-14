@@ -38,9 +38,11 @@
 ## Key Design Decisions
 
 ### 1. Title: "Hear everything / Alter nothing"
-- Two lines, no punctuation — reads like a statement, not a sentence
+- Exactly 2 lines, no punctuation — reads like a manifesto, not a sentence
 - Line 1 in white, line 2 in `#555` — creates visual hierarchy
 - Font-weight 200 for dramatic thinness at large sizes
+- Noir logo (SVG EQ bars) displayed above the title as visual anchor
+- `line-height:1.05` — tight but readable at large scale
 
 ### 2. Bits-to-signal canvas animation
 - 220 particles in 3 phases: chaotic → funnel convergence → organized sine wave

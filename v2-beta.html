@@ -482,13 +482,13 @@ function Hero() {
           <span className="hero__dot" />
           <TypedText text="BETA PROGRAM — NOW OPEN" delay={300} speed={30} />
         </div>
+        <div className="hero__logo">
+          <Logo size={48} color="#fff" />
+        </div>
         <h1 className="hero__h1">
-          <span className="hero__line hero__line--1">
-            Hear everything
-          </span>
-          <span className="hero__line hero__line--2">
-            Alter nothing
-          </span>
+          <span className="hero__line hero__line--1">Hear everything</span>
+          <br />
+          <span className="hero__line hero__line--2">Alter nothing</span>
         </h1>
         <p className="hero__p">
           The lossless audio player macOS deserves — built in Rust, launching soon.<br/>
@@ -892,13 +892,17 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .cursor{animation:cursorBlink 0.8s step-end infinite;color:#555}
 @keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
 
+.hero__logo{
+  margin-bottom:28px;
+  opacity:0;animation:fadeIn 0.8s ease-out 0.3s both;
+}
 .hero__h1{
   font-family:'Geist Mono','Space Mono',monospace;
   font-weight:200;font-size:clamp(42px,9vw,96px);
-  line-height:0.95;letter-spacing:-3px;
+  line-height:1.05;letter-spacing:-3px;
   margin-bottom:32px;
 }
-.hero__line{display:block;opacity:0;animation:slideUp 0.8s ease-out forwards}
+.hero__line{opacity:0;animation:slideUp 0.8s ease-out forwards}
 .hero__line--1{animation-delay:0.5s}
 .hero__line--2{animation-delay:0.7s;color:#555}
 @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}

@@ -566,8 +566,8 @@ const features = [
   },
   {
     id: "02",
-    title: "Built with Rust",
-    body: "< 80 MB RAM. Instant cold start. No Electron. Native on Intel and Apple Silicon. Performance that disappears.",
+    title: "Light & instant",
+    body: "Under 80 MB of memory. Launches in under a second. Native on Intel and Apple Silicon. The app gets out of the way — you just hear music.",
     icon: "bolt",
   },
   {
@@ -587,9 +587,9 @@ const features = [
 function Features() {
   return (
     <section className="feat" id="features">
-      <div className="feat__head">
+      <div className="sect__head">
         <span className="label">02</span>
-        <span className="label">Features</span>
+        <h2 className="sect__title">Features</h2>
       </div>
       <div className="feat__grid">
         {features.map((f, i) => <FeatureItem key={i} {...f} idx={i} />)}
@@ -628,9 +628,9 @@ function Specs() {
   const [r, v] = useReveal();
   return (
     <section className="specs" id="specs" ref={r}>
-      <div className="specs__head">
+      <div className="sect__head">
         <span className="label">03</span>
-        <span className="label">Specifications</span>
+        <h2 className="sect__title">Specifications</h2>
       </div>
       <div className="specs__grid">
         {[
@@ -753,9 +753,9 @@ function Compare() {
   const [r, vis] = useReveal();
   return (
     <section className="cmp" id="compare" ref={r}>
-      <div className="cmp__head">
+      <div className="sect__head">
         <span className="label">04</span>
-        <span className="label">Compare</span>
+        <h2 className="sect__title">Compare</h2>
       </div>
       <div className={`cmp__wrap${vis ? " vis" : ""}`}>
         <div className="cmp__scroll">
@@ -940,9 +940,10 @@ function Roadmap() {
   const [r, v] = useReveal();
   return (
     <section className="road" id="roadmap" ref={r}>
-      <div className="road__head">
+      <div className="sect__head">
         <span className="label">05</span>
-        <span className="label">Coming Soon</span>
+        <h2 className="sect__title">Roadmap</h2>
+        <p className="sect__sub">These features are not available yet — here's what we're building next.</p>
       </div>
       <div className="road__grid">
         {roadmapItems.map((item, i) => {
@@ -1013,6 +1014,14 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .label{
   font-size:10px;letter-spacing:3px;text-transform:uppercase;
   color:#666;font-weight:400;
+}
+.sect__head{display:flex;flex-direction:column;gap:8px;margin-bottom:60px}
+.sect__title{font-size:clamp(22px,3vw,32px);font-weight:300;letter-spacing:1px;color:#fff;margin:0}
+.sect__sub{font-size:13px;color:#555;font-weight:300;letter-spacing:0.3px;line-height:1.6;max-width:500px}
+
+@media(max-width:768px){
+  .sect__head{margin-bottom:40px}
+  .sect__title{font-size:22px}
 }
 
 /* ─── NAV ─── */
@@ -1149,7 +1158,6 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 /* ─── FEATURES ─── */
 .feat{padding:100px 32px;max-width:1200px;margin:0 auto}
-.feat__head{display:flex;gap:40px;margin-bottom:60px}
 .feat__grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
 .feat__item{
   padding:40px 32px;border-top:1px solid #111;
@@ -1167,12 +1175,10 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 @media(max-width:768px){
   .feat{padding:60px 20px}
   .feat__grid{grid-template-columns:1fr}
-  .feat__head{gap:20px;margin-bottom:40px}
 }
 
 /* ─── SPECS ─── */
 .specs{padding:100px 32px;max-width:1200px;margin:0 auto}
-.specs__head{display:flex;gap:40px;margin-bottom:60px}
 .specs__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
 .specs__item{
   padding:40px 0;border-top:1px solid #111;text-align:center;
@@ -1186,7 +1192,6 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 @media(max-width:768px){
   .specs{padding:60px 20px}
   .specs__grid{grid-template-columns:repeat(2,1fr)}
-  .specs__head{gap:20px;margin-bottom:40px}
 }
 
 /* ─── SIGNAL ─── */
@@ -1218,7 +1223,6 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 /* ─── COMPARE ─── */
 .cmp{padding:100px 32px;max-width:900px;margin:0 auto}
-.cmp__head{display:flex;gap:40px;margin-bottom:60px}
 .cmp__wrap{opacity:0;transform:translateY(16px);transition:all .7s ease}
 .cmp__wrap.vis{opacity:1;transform:translateY(0)}
 .cmp__scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -1257,7 +1261,6 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 @media(max-width:768px){
   .cmp{padding:60px 20px}
-  .cmp__head{gap:20px;margin-bottom:40px}
 }
 
 /* ─── QUOTE ─── */
@@ -1404,7 +1407,6 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 /* ─── ROADMAP ─── */
 .road{padding:100px 32px;max-width:1200px;margin:0 auto}
-.road__head{display:flex;gap:40px;margin-bottom:60px}
 .road__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#111}
 .road__item{
   padding:36px 28px;background:#000;
@@ -1453,7 +1455,6 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 @media(max-width:768px){
   .road{padding:60px 20px}
   .road__grid{grid-template-columns:1fr}
-  .road__head{gap:20px;margin-bottom:40px}
   .road__item{padding:28px 20px}
 }
 

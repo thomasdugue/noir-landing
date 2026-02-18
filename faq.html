@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HEAN — FAQ</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-type="module">
+const { useState, useEffect, useRef } = React;
+
+// ═══════════════════════════════════════════════
+// FONTS
+// ═══════════════════════════════════════════════
+function useFonts() {
+  useEffect(() => {
+    const l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Geist+Mono:wght@100;200;300;400;500;600&display=swap";
+    document.head.appendChild(l);
+    return () => document.head.removeChild(l);
+  }, []);
+}
+
+// ═══════════════════════════════════════════════
+// LOGO
+// ═══════════════════════════════════════════════
+function Logo({ size = 32, color = "#fff" }) {
+  return (
+    <svg width={size} height={size * 0.8} viewBox="0 0 100 80" fill={color}>
+      <ellipse cx="12" cy="40" rx="8" ry="8" />
+      <rect x="24" y="18" width="14" height="44" rx="7" />
+      <rect x="43" y="4" width="14" height="72" rx="7" />
+      <rect x="62" y="18" width="14" height="44" rx="7" />
+      <ellipse cx="88" cy="40" rx="8" ry="8" />
+      <ellipse cx="31" cy="40" rx="4" ry="5.5" fill="#000" />
+      <ellipse cx="50" cy="40" rx="4" ry="5.5" fill="#000" />
+      <ellipse cx="69" cy="40" rx="4" ry="5.5" fill="#000" />
+    </svg>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════
+function Nav() {
+  return (
+    <nav className="nav nav--solid">
+      <div className="nav__inner">
+        <a className="nav__left" href="index.html">
+          <Logo size={22} color="#fff" />
+          <span className="nav__name">HEAN</span>
+          <span className="nav__beta">BETA</span>
+        </a>
+        <div className="nav__links">
+          <a href="index.html">Home</a>
+          <a href="faq.html" className="nav__active">FAQ</a>
+          <a className="nav__cta" href="index.html#join">Join Beta</a>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// FAQ DATA
+// ═══════════════════════════════════════════════
+const faqSections = [
+  {
+    title: "General",
+    items: [
+      {
+        q: "What is Hean?",
+        a: "Hean is a lossless audio player for macOS. It plays your local music files — FLAC, ALAC, DSD, WAV, AIFF — in bit-perfect quality, meaning the audio signal reaches your DAC exactly as the artist encoded it, with zero alteration."
+      },
+      {
+        q: "Who is Hean for?",
+        a: "Audiophiles, music producers, sound engineers, and anyone who owns lossless music files and cares about playback quality. If you've invested in a good DAC or headphones, Hean makes sure your files are played at their full potential."
+      },
+      {
+        q: "Is Hean a streaming service?",
+        a: "No. Hean plays your local files. It does not stream from Spotify, Tidal, Apple Music, or any other service. You point it to your music folders, and it builds a browsable library from your files."
+      },
+      {
+        q: "What does 'bit-perfect' mean?",
+        a: "Bit-perfect means the audio data from your file is sent to your DAC without any modification — no resampling, no volume normalization, no mixing with system sounds. Every single bit arrives exactly as stored in the original file. Hean achieves this through CoreAudio Integer Mode, which bypasses the macOS audio mixer entirely."
+      },
+      {
+        q: "Does Hean require an internet connection?",
+        a: "No. Hean works entirely offline. There is no account to create, no activation server, no telemetry. The app works the moment you open it."
+      },
+    ]
+  },
+  {
+    title: "Compatibility",
+    items: [
+      {
+        q: "Which audio formats are supported?",
+        a: "FLAC, ALAC (Apple Lossless), DSD (DSF/DFF), WAV, AIFF, MP3, AAC, and OGG. Hean handles resolutions up to 24-bit / 192 kHz for PCM formats and DSD256 for DSD."
+      },
+      {
+        q: "Which macOS versions are supported?",
+        a: "macOS Sonoma (14) and macOS Sequoia (15). Both Intel and Apple Silicon (M1, M2, M3, M4) Macs are natively supported — the app runs as a universal binary."
+      },
+      {
+        q: "Does Hean work with my DAC?",
+        a: "If your DAC works with macOS, it works with Hean. This includes USB DACs, Thunderbolt audio interfaces, AirPlay devices, and the built-in Mac output. Hean uses CoreAudio Integer Mode for USB DACs that support it, ensuring exclusive access to the device for true bit-perfect output."
+      },
+      {
+        q: "Will there be a Windows version?",
+        a: "Yes. A Windows version is currently in development. It will use the same audio engine with WASAPI Exclusive Mode for bit-perfect playback. Join the beta to be notified when it's available."
+      },
+      {
+        q: "What about Linux?",
+        a: "Not planned for the initial release, but it's on our radar depending on demand. Let us know if it matters to you."
+      },
+    ]
+  },
+  {
+    title: "Audio quality",
+    items: [
+      {
+        q: "How is Hean different from Apple Music or Spotify?",
+        a: "Streaming services re-encode, resample, and route audio through multiple processing layers before it reaches your ears. Hean does none of that. It reads your file, decodes it, and sends the raw PCM data directly to your DAC. No mixer, no processing, no signal alteration."
+      },
+      {
+        q: "How is Hean different from Audirvana or Roon?",
+        a: "Same philosophy of bit-perfect playback, but Hean is lighter (under 80 MB vs 800 MB+), faster to launch, requires no account or internet, and costs a one-time fee of €35 instead of yearly subscriptions (€109/yr for Audirvana, €155/yr for Roon)."
+      },
+      {
+        q: "What is CoreAudio Integer Mode?",
+        a: "It's a macOS audio mode that gives Hean exclusive access to your DAC, bypassing the system mixer entirely. This means no other app can play sound while Hean is using Integer Mode, but in return, the signal is guaranteed to be unaltered — no sample rate conversion, no mixing, no volume scaling."
+      },
+      {
+        q: "Does Hean alter the volume or apply EQ?",
+        a: "By default, no. The signal passes through untouched. We are working on an optional AutoEQ feature (see Roadmap) that will offer headphone-specific correction profiles, but it will always be opt-in and clearly labeled."
+      },
+      {
+        q: "What decoder does Hean use?",
+        a: "Hean uses Symphonia, an open-source audio decoder written in Rust. It decodes FLAC, WAV, ALAC, and other formats natively without relying on system codecs or FFmpeg."
+      },
+    ]
+  },
+  {
+    title: "Beta program",
+    items: [
+      {
+        q: "What is the beta program?",
+        a: "We're inviting 50 audiophiles to test Hean before the public launch. Beta testers get early access to the app, can report bugs, suggest features, and help shape the final release."
+      },
+      {
+        q: "How do I join the beta?",
+        a: "Enter your email on the landing page. We'll send you a download link when a spot opens up. No account creation, no credit card."
+      },
+      {
+        q: "Is the beta free?",
+        a: "Yes. The beta is completely free. Beta testers will also receive the final release for free as a thank-you — no strings attached."
+      },
+      {
+        q: "What's expected of beta testers?",
+        a: "Use the app with your own music library and DAC setup. If something sounds wrong, crashes, or feels off — tell us. We'll provide a simple way to report issues. There's no minimum commitment."
+      },
+      {
+        q: "When does the beta start?",
+        a: "We're onboarding testers now, in small batches. If you sign up, you'll receive an email when your spot is ready. We're aiming to complete the beta phase in Q1 2026."
+      },
+      {
+        q: "How many beta spots are available?",
+        a: "50. We're keeping it small to ensure we can respond to every tester's feedback and iterate quickly."
+      },
+    ]
+  },
+  {
+    title: "Pricing & business model",
+    items: [
+      {
+        q: "How much will Hean cost?",
+        a: "€35, one-time purchase. No subscription, no recurring fees. You buy it once, you own it. All future updates within the same major version are included."
+      },
+      {
+        q: "Why no subscription?",
+        a: "We believe audio software should be a tool you own, not a service you rent. Subscriptions make sense for streaming platforms that license music. Hean plays files you already own — there's no ongoing cost to justify a recurring charge."
+      },
+      {
+        q: "Will beta testers have to pay?",
+        a: "No. Beta testers receive the final v1.0 release for free."
+      },
+      {
+        q: "Is there a trial version?",
+        a: "We're considering a trial for the public launch. For now, the beta program is the best way to try Hean for free."
+      },
+    ]
+  },
+  {
+    title: "Technical",
+    items: [
+      {
+        q: "How much memory does Hean use?",
+        a: "Under 80 MB in typical use. Hean is built with a compiled, memory-safe language and doesn't use Electron or any web-based runtime. The UI is native."
+      },
+      {
+        q: "How fast does it launch?",
+        a: "Under one second on Apple Silicon, about 1-2 seconds on Intel Macs. There's no splash screen, no loading animation — the app is ready when you see it."
+      },
+      {
+        q: "Does Hean index my library?",
+        a: "Yes. Point Hean at your music folders and it will scan and index your files, reading embedded metadata (artist, album, genre, cover art). The index is stored locally and updates automatically when files change."
+      },
+      {
+        q: "Does Hean modify my files?",
+        a: "Never. Hean is read-only. It will never write to, rename, move, or modify your music files in any way."
+      },
+      {
+        q: "Does Hean phone home or collect data?",
+        a: "No. There is no telemetry, no analytics, no crash reporting sent to us. The app never connects to the internet. Your music library and listening habits stay on your machine."
+      },
+      {
+        q: "What is Hean built with?",
+        a: "The audio engine and core logic are written in Rust, a systems programming language known for performance and memory safety. The UI layer uses Tauri, a lightweight framework for building desktop apps. The decoder is Symphonia, an open-source Rust audio library."
+      },
+    ]
+  },
+  {
+    title: "Roadmap",
+    items: [
+      {
+        q: "What features are coming next?",
+        a: "Windows version (in development), iOS & Android remote control app, AutoEQ profiles for 5,000+ headphones, and DAP (portable player) music transfer. Beta testers will get early access to all of these."
+      },
+      {
+        q: "What is AutoEQ?",
+        a: "AutoEQ will automatically apply headphone-specific equalization corrections based on measured frequency response data. Select your headphone model from a database of 5,000+ headphones, and Hean will apply a correction curve to flatten the response. This is always optional and clearly labeled."
+      },
+      {
+        q: "What is DAP Transfer?",
+        a: "A feature to sync and transfer your lossless music library to portable audio players (DAPs). It will handle format conversion if needed, export playlists, and preserve all metadata."
+      },
+      {
+        q: "Can I request a feature?",
+        a: "Absolutely. Beta testers can suggest features directly. After launch, we'll have a public feedback channel. We're building Hean for the community that uses it."
+      },
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════
+// FAQ COMPONENTS
+// ═══════════════════════════════════════════════
+function FAQItem({ q, a, idx }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`faq__item${open ? " faq__item--open" : ""}`}>
+      <button className="faq__q" onClick={() => setOpen(!open)}>
+        <span className="faq__q-text">{q}</span>
+        <span className="faq__toggle">{open ? "−" : "+"}</span>
+      </button>
+      <div className="faq__a-wrap" style={{ maxHeight: open ? "500px" : "0" }}>
+        <p className="faq__a">{a}</p>
+      </div>
+    </div>
+  );
+}
+
+function FAQSection({ title, items, sectionIdx }) {
+  return (
+    <div className="faq__section">
+      <div className="faq__section-head">
+        <span className="faq__section-num">{String(sectionIdx + 1).padStart(2, "0")}</span>
+        <h2 className="faq__section-title">{title}</h2>
+      </div>
+      <div className="faq__list">
+        {items.map((item, i) => <FAQItem key={i} {...item} idx={i} />)}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// FOOTER
+// ═══════════════════════════════════════════════
+function Footer() {
+  return (
+    <footer className="foot">
+      <div className="foot__inner">
+        <div className="foot__left">
+          <Logo size={18} color="#555" />
+          <span>HEAN</span>
+        </div>
+        <div className="foot__right">
+          <span>© 2026 Hean Audio</span>
+          <span className="foot__sep">·</span>
+          <a href="index.html">Home</a>
+          <span className="foot__sep">·</span>
+          <a href="faq.html">FAQ</a>
+          <span className="foot__sep">·</span>
+          <span>Crafted for those who listen</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════
+const css = `
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Geist Mono','Space Mono',monospace;
+  background:#000;color:#fff;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  font-weight:300;letter-spacing:0.02em;
+}
+a{color:inherit;text-decoration:none;cursor:pointer}
+::selection{background:#fff;color:#000}
+
+/* ─── NAV ─── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #111}
+.nav__inner{max-width:1200px;margin:0 auto;padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav__left{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none}
+.nav__name{font-size:14px;font-weight:400;letter-spacing:6px;color:#fff}
+.nav__beta{font-size:8px;letter-spacing:2px;color:#000;background:#fff;padding:2px 6px;border-radius:2px;font-weight:600}
+.nav__links{display:flex;align-items:center;gap:28px}
+.nav__links a{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#666;transition:color .2s;font-weight:400}
+.nav__links a:hover{color:#fff}
+.nav__active{color:#fff!important}
+.nav__cta{color:#fff!important;border:1px solid #333;padding:6px 16px!important;border-radius:2px;transition:all .2s!important}
+.nav__cta:hover{background:#fff;color:#000!important;border-color:#fff}
+
+@media(max-width:768px){
+  .nav__inner{padding:0 20px}
+}
+
+/* ─── PAGE HEADER ─── */
+.page-header{
+  padding:140px 32px 60px;max-width:800px;margin:0 auto;
+}
+.page-header__label{
+  font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:#555;display:block;margin-bottom:12px;
+}
+.page-header__title{
+  font-size:clamp(28px,4vw,42px);font-weight:200;
+  letter-spacing:-1px;margin-bottom:16px;
+}
+.page-header__sub{
+  font-size:14px;color:#666;font-weight:300;line-height:1.7;
+  max-width:500px;
+}
+
+@media(max-width:768px){
+  .page-header{padding:100px 20px 40px}
+}
+
+/* ─── FAQ ─── */
+.faq{padding:0 32px 100px;max-width:800px;margin:0 auto}
+
+.faq__section{margin-bottom:48px}
+.faq__section-head{
+  display:flex;align-items:baseline;gap:14px;
+  margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #151515;
+}
+.faq__section-num{font-size:10px;letter-spacing:3px;color:#333}
+.faq__section-title{font-size:18px;font-weight:300;letter-spacing:0.5px}
+
+.faq__list{display:flex;flex-direction:column;gap:0}
+
+.faq__item{border-bottom:1px solid #0d0d0d;transition:border-color .2s}
+.faq__item:hover{border-bottom-color:#1a1a1a}
+.faq__item--open{border-bottom-color:#222}
+
+.faq__q{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  width:100%;padding:18px 0;background:none;border:none;
+  color:#fff;cursor:pointer;text-align:left;
+  font-family:'Geist Mono','Space Mono',monospace;
+  font-size:13px;font-weight:400;letter-spacing:0.3px;line-height:1.5;
+  transition:color .15s;
+}
+.faq__q:hover{color:#ccc}
+.faq__q-text{flex:1}
+.faq__toggle{
+  font-size:18px;font-weight:200;color:#444;
+  width:24px;text-align:center;flex-shrink:0;
+  transition:color .15s;
+}
+.faq__item--open .faq__toggle{color:#fff}
+
+.faq__a-wrap{
+  overflow:hidden;transition:max-height .35s ease;
+}
+.faq__a{
+  padding:0 0 20px 0;
+  font-size:13px;line-height:1.9;color:#777;font-weight:300;
+  letter-spacing:0.02em;
+}
+
+@media(max-width:768px){
+  .faq{padding:0 20px 60px}
+  .faq__q{font-size:12px;padding:14px 0}
+  .faq__a{font-size:12px}
+}
+
+/* ─── FOOTER ─── */
+.foot{padding:40px 32px;border-top:1px solid #0a0a0a}
+.foot__inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.foot__left{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:4px;color:#333}
+.foot__right{display:flex;align-items:center;gap:0;font-size:10px;color:#444;letter-spacing:1px;font-weight:300}
+.foot__right a{color:#555;transition:color .2s}
+.foot__right a:hover{color:#fff}
+.foot__sep{margin:0 12px;color:#111}
+
+@media(max-width:768px){
+  .foot{padding:32px 20px}
+  .foot__inner{flex-direction:column;gap:16px;text-align:center}
+  .foot__right{flex-wrap:wrap;justify-content:center}
+}
+`;
+
+// ═══════════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════════
+function App() {
+  useFonts();
+  return (
+    <React.Fragment>
+      <style>{css}</style>
+      <Nav />
+      <div className="page-header">
+        <span className="page-header__label">Support</span>
+        <h1 className="page-header__title">Frequently Asked Questions</h1>
+        <p className="page-header__sub">
+          Everything you need to know about Hean, the beta program, pricing, and audio quality.
+        </p>
+      </div>
+      <div className="faq">
+        {faqSections.map((section, i) => (
+          <FAQSection key={i} {...section} sectionIdx={i} />
+        ))}
+      </div>
+      <Footer />
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

@@ -461,6 +461,7 @@ function Nav() {
           <a onClick={() => go("features")}>Features</a>
           <a onClick={() => go("compare")}>Compare</a>
           <a onClick={() => go("roadmap")}>Roadmap</a>
+          <a href="faq.html">FAQ</a>
           <a className="nav__cta" onClick={() => go("join")}>Join Beta</a>
         </div>
         <button className={`burger${menuOpen ? " active" : ""}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
@@ -987,7 +988,7 @@ function Footer() {
         <div className="foot__right">
           <span>© 2026 Hean Audio</span>
           <span className="foot__sep">·</span>
-          <span>Built with Rust</span>
+          <a href="faq.html">FAQ</a>
           <span className="foot__sep">·</span>
           <span>Crafted for those who listen</span>
         </div>
@@ -1475,6 +1476,8 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .foot__inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
 .foot__left{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:4px;color:#333}
 .foot__right{display:flex;align-items:center;gap:0;font-size:10px;color:#444;letter-spacing:1px;font-weight:300}
+.foot__right a{color:#555;transition:color .2s}
+.foot__right a:hover{color:#fff}
 .foot__sep{margin:0 12px;color:#111}
 
 @media(max-width:768px){

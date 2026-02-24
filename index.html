@@ -850,19 +850,22 @@ function BetaCTA() {
     setErrorMsg("");
 
     if (!supabase) {
-      // Supabase not configured — accept silently for demo
+      console.warn("Supabase client not initialized — running in demo mode");
       setStatus("success");
       return;
     }
 
     try {
-      const { error } = await supabase
+      console.log("Inserting email:", email.trim().toLowerCase());
+      const { data, error } = await supabase
         .from("subscribers")
-        .insert([{ email: email.trim().toLowerCase() }]);
+        .insert([{ email: email.trim().toLowerCase() }])
+        .select();
+
+      console.log("Supabase response:", { data, error });
 
       if (error) {
         if (error.code === "23505") {
-          // Unique constraint — email already exists
           setStatus("success");
         } else {
           throw error;
@@ -871,8 +874,9 @@ function BetaCTA() {
         setStatus("success");
       }
     } catch (err) {
+      console.error("Supabase insert error:", err);
       setStatus("error");
-      setErrorMsg("Something went wrong. Please try again.");
+      setErrorMsg(err.message || "Something went wrong. Please try again.");
     }
   };
 

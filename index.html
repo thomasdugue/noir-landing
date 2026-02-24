@@ -30,7 +30,16 @@ const { useState, useEffect, useRef, useCallback, useMemo } = React;
 //    (Settings → API dans le dashboard Supabase)
 const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
 const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const SUPABASE_CONFIGURED = SUPABASE_URL !== "https://YOUR_PROJECT_ID.supabase.co";
+let supabase = null;
+try {
+  if (SUPABASE_CONFIGURED) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.warn("Supabase init failed:", e);
+}
 
 // ═══════════════════════════════════════════════
 // FONTS
@@ -839,6 +848,12 @@ function BetaCTA() {
 
     setStatus("loading");
     setErrorMsg("");
+
+    if (!supabase) {
+      // Supabase not configured — accept silently for demo
+      setStatus("success");
+      return;
+    }
 
     try {
       const { error } = await supabase

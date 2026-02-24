@@ -789,8 +789,8 @@ const compareRows = [
 ];
 
 function CV({ v }) {
-  if (v === true) return <span className="cmp__yes">YES</span>;
-  if (v === false) return <span className="cmp__no">NO</span>;
+  if (v === true) return <span className="cmp__yes">✓</span>;
+  if (v === false) return <span className="cmp__no">✗</span>;
   return <span className="cmp__txt">{v}</span>;
 }
 
@@ -829,6 +829,9 @@ function Compare() {
         </div>
         <div className="cmp__note">
           Founding members get the final release for free — everyone else pays €35. This offer disappears when 50 spots fill.
+        </div>
+        <div className="cmp__source">
+          Prices and specs based on publicly available data as of January 2026.
         </div>
       </div>
     </section>
@@ -1378,45 +1381,57 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 
 /* ─── COMPARE ─── */
+/* ─── COMPARE ─── */
 .cmp{padding:100px 32px;max-width:900px;margin:0 auto}
 .cmp__wrap{opacity:0;transform:translateY(16px);transition:all .7s ease}
 .cmp__wrap.vis{opacity:1;transform:translateY(0)}
 .cmp__scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .cmp__scroll::-webkit-scrollbar{height:2px}
 .cmp__scroll::-webkit-scrollbar-track{background:#000}
-.cmp__scroll::-webkit-scrollbar-thumb{background:#222}
+.cmp__scroll::-webkit-scrollbar-thumb{background:#333}
 .cmp__table{width:100%;border-collapse:collapse;min-width:540px}
-.cmp__corner{background:transparent;border-bottom:1px solid #111}
+.cmp__corner{background:transparent;border-bottom:1px solid #222}
 .cmp__th{
-  font-size:10px;letter-spacing:3px;font-weight:400;color:#888;
-  padding:20px 16px;text-align:center;border-bottom:1px solid #111;
+  font-size:11px;letter-spacing:3px;font-weight:400;color:#666;
+  padding:20px 20px;text-align:center;border-bottom:1px solid #222;
 }
 .cmp__th--noir{
-  color:#fff;border-top:1px solid #fff;position:relative;
+  color:#fff;position:relative;
+  background:rgba(255,255,255,0.04);
+  border-top:2px solid #fff;
 }
 .cmp__badge{
   display:block;font-size:8px;letter-spacing:2px;color:#888;margin-top:4px;font-weight:400;
 }
 .cmp__row{transition:background .15s}
-.cmp__row:hover{background:rgba(255,255,255,0.01)}
+.cmp__row:hover{background:rgba(255,255,255,0.02)}
+.cmp__row:nth-child(even){background:rgba(255,255,255,0.01)}
+.cmp__row:nth-child(even):hover{background:rgba(255,255,255,0.03)}
 .cmp__label{
-  font-size:10px;letter-spacing:2px;color:#999;padding:14px 16px;
-  border-bottom:1px solid #080808;white-space:nowrap;font-weight:400;
+  font-size:11px;letter-spacing:2px;color:#aaa;padding:16px 20px;
+  border-bottom:1px solid #1a1a1a;white-space:nowrap;font-weight:400;
 }
 .cmp__val{
-  text-align:center;padding:14px 16px;border-bottom:1px solid #080808;
-  font-size:11px;letter-spacing:1px;font-weight:300;
+  text-align:center;padding:16px 20px;border-bottom:1px solid #1a1a1a;
+  font-size:12px;letter-spacing:1px;font-weight:300;
 }
-.cmp__val--noir{background:rgba(255,255,255,0.015)}
-.cmp__yes{color:#fff;font-weight:400}
-.cmp__no{color:#999}
-.cmp__txt{color:#999;font-size:10px;letter-spacing:1px}
+.cmp__val--noir{background:rgba(255,255,255,0.04)}
+.cmp__row:nth-child(even) .cmp__val--noir{background:rgba(255,255,255,0.05)}
+.cmp__yes{color:#fff;font-weight:500}
+.cmp__no{color:#444}
+.cmp__txt{color:#888;font-size:11px;letter-spacing:1px}
 .cmp__note{
-  font-size:11px;color:#aaa;letter-spacing:1px;margin-top:24px;text-align:center;font-weight:400;
+  font-size:11px;color:#888;letter-spacing:1px;margin-top:24px;text-align:center;font-weight:400;
+}
+.cmp__source{
+  font-size:9px;color:#444;letter-spacing:1px;margin-top:10px;text-align:center;font-weight:300;
 }
 
 @media(max-width:768px){
   .cmp{padding:60px 20px}
+  .cmp__th{padding:16px 12px;font-size:10px;letter-spacing:2px}
+  .cmp__label{padding:12px 12px;font-size:10px}
+  .cmp__val{padding:12px 12px;font-size:11px}
 }
 
 /* ─── QUOTE ─── */

@@ -28,8 +28,8 @@ const { useState, useEffect, useRef, useCallback, useMemo } = React;
 //    CREATE POLICY "Allow anonymous inserts" ON subscribers FOR INSERT WITH CHECK (true);
 // 3. Remplacez les valeurs ci-dessous par celles de votre projet
 //    (Settings → API dans le dashboard Supabase)
-const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+const SUPABASE_URL = "https://knsuwgllvsvuaigjypjl.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtuc3V3Z2xsdnN2dWFpZ2p5cGpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjUyMTcsImV4cCI6MjA4NzUwMTIxN30.XFMhlAC9uVvyNe7VN59y3UZ4xa0-0wR5DG3MgrxqC_M";
 
 const SUPABASE_CONFIGURED = SUPABASE_URL !== "https://YOUR_PROJECT_ID.supabase.co";
 let supabase = null;

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thomasdugue.github.io/noir-landing/sitemap.xml

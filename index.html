@@ -21,6 +21,28 @@
   <meta name="twitter:description" content="Bit-perfect lossless audio player for macOS, built in Rust. Join the beta." />
   <meta name="twitter:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
 
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "HEAN",
+    "operatingSystem": "macOS",
+    "applicationCategory": "MultimediaApplication",
+    "description": "Bit-perfect lossless audio player for macOS, built in Rust. CoreAudio Integer Mode, FLAC/ALAC support, under 80MB.",
+    "offers": {
+      "@type": "Offer",
+      "price": "35",
+      "priceCurrency": "EUR"
+    },
+    "softwareVersion": "Beta",
+    "author": {
+      "@type": "Organization",
+      "name": "Hean Audio"
+    }
+  }
+  </script>
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text y='70' x='15' font-size='60' fill='white' font-family='monospace'>H</text></svg>" />
 
@@ -52,6 +74,23 @@ const SUPABASE_URL = "https://knsuwgllvsvuaigjypjl.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtuc3V3Z2xsdnN2dWFpZ2p5cGpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjUyMTcsImV4cCI6MjA4NzUwMTIxN30.XFMhlAC9uVvyNe7VN59y3UZ4xa0-0wR5DG3MgrxqC_M";
 
 const SUPABASE_CONFIGURED = SUPABASE_URL !== "https://YOUR_PROJECT_ID.supabase.co";
+
+// ═══════════════════════════════════════════════
+// UTM SOURCE TRACKING
+// ═══════════════════════════════════════════════
+// Captures utm_source, utm_medium, utm_campaign from URL params
+// Requires adding columns to Supabase:
+//   ALTER TABLE subscribers ADD COLUMN source TEXT;
+//   ALTER TABLE subscribers ADD COLUMN medium TEXT;
+//   ALTER TABLE subscribers ADD COLUMN campaign TEXT;
+function getUtmParams() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    source: params.get("utm_source") || params.get("ref") || null,
+    medium: params.get("utm_medium") || null,
+    campaign: params.get("utm_campaign") || null,
+  };
+}
 let supabase = null;
 try {
   if (SUPABASE_CONFIGURED) {
@@ -445,6 +484,7 @@ function Nav() {
           <a onClick={() => go("compare")}>Compare</a>
           <a onClick={() => go("roadmap")}>Roadmap</a>
           <a href="faq.html">FAQ</a>
+          <a href="updates.html">Updates</a>
           <a className="nav__cta" onClick={() => go("join")}>Join Beta</a>
         </div>
         <button className={`burger${menuOpen ? " active" : ""}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
@@ -473,20 +513,21 @@ function useSpotsCount(total = 50) {
 }
 
 function SpotsProgress({ taken, total = 50 }) {
+  const remaining = Math.max(total - taken, 0);
   const pct = Math.min((taken / total) * 100, 100);
   return (
     <div className="spots">
       <div className="spots__header">
-        <span className="spots__count">{taken}<span className="spots__total">/{total}</span></span>
-        <span className="spots__label">SPOTS CLAIMED</span>
+        <span className="spots__count">{remaining}</span>
+        <span className="spots__label">SPOTS LEFT</span>
       </div>
       <div className="spots__bar">
         <div className="spots__fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="spots__hint">
-        {taken >= total
+        {remaining <= 0
           ? "REGISTRATIONS PERMANENTLY CLOSED"
-          : `Only ${total - taken} left — no waitlist, no second chance`}
+          : `Only ${remaining} left — no waitlist, no second chance`}
       </div>
     </div>
   );
@@ -831,10 +872,11 @@ function BetaCTA() {
     }
 
     try {
-      console.log("Inserting email:", email.trim().toLowerCase());
+      const utm = getUtmParams();
+      console.log("Inserting email:", email.trim().toLowerCase(), "utm:", utm);
       const { data, error } = await supabase
         .from("subscribers")
-        .insert([{ email: email.trim().toLowerCase() }])
+        .insert([{ email: email.trim().toLowerCase(), ...utm }])
         .select();
 
       console.log("Supabase response:", { data, error });
@@ -871,8 +913,34 @@ function BetaCTA() {
           spot fills, this form disappears and never comes back.
         </p>
         {status === "success" ? (
-          <div className="beta__thanks">
-            ✓ You're on the list. We'll reach out soon.
+          <div className="beta__success">
+            <div className="beta__thanks">
+              ✓ You're on the list. We'll reach out soon.
+            </div>
+            <div className="beta__share">
+              <p className="beta__share-label">HELP SPREAD THE WORD</p>
+              <div className="beta__share-buttons">
+                <a
+                  className="beta__share-btn"
+                  href={`https://x.com/intent/tweet?text=${encodeURIComponent("Just claimed my spot in the HEAN beta — a bit-perfect lossless audio player for macOS, built in Rust. Only 50 spots.\n\nhttps://thomasdugue.github.io/noir-landing/?utm_source=twitter&utm_medium=share")}`}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Share on X/Twitter
+                </a>
+                <button
+                  className="beta__share-btn"
+                  onClick={() => {
+                    navigator.clipboard.writeText("https://thomasdugue.github.io/noir-landing/?utm_source=copy&utm_medium=share");
+                    document.querySelector('.beta__copied').style.opacity = '1';
+                    setTimeout(() => document.querySelector('.beta__copied').style.opacity = '0', 2000);
+                  }}
+                >
+                  Copy link
+                </button>
+              </div>
+              <span className="beta__copied">Copied!</span>
+            </div>
           </div>
         ) : (
           <form className="beta__form" onSubmit={submit}>
@@ -1055,6 +1123,8 @@ function Footer() {
           <span className="foot__sep">·</span>
           <a href="faq.html">FAQ</a>
           <span className="foot__sep">·</span>
+          <a href="updates.html">Updates</a>
+          <span className="foot__sep">·</span>
           <span>Crafted for those who listen</span>
         </div>
       </div>
@@ -1175,8 +1245,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   opacity:0;animation:fadeIn 0.8s ease-out 1.1s both;
 }
 .spots__header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
-.spots__count{font-size:32px;font-weight:200;letter-spacing:-1px;line-height:1}
-.spots__total{font-size:16px;color:#555;font-weight:300}
+.spots__count{font-size:40px;font-weight:200;letter-spacing:-1px;line-height:1}
 .spots__label{font-size:9px;letter-spacing:3px;color:#888;text-transform:uppercase}
 .spots__bar{
   width:100%;height:2px;background:#1a1a1a;border-radius:1px;overflow:hidden;
@@ -1381,7 +1450,20 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background .2s;
 }
 .beta__form button:hover{background:#ddd}
-.beta__thanks{font-size:13px;color:#fff;letter-spacing:1px;padding:20px 0;animation:fadeIn .5s ease-out}
+.beta__success{animation:fadeIn .5s ease-out}
+.beta__thanks{font-size:13px;color:#fff;letter-spacing:1px;padding:20px 0}
+.beta__share{margin-top:16px;padding-top:20px;border-top:1px solid #111}
+.beta__share-label{font-size:9px;letter-spacing:3px;color:#888;text-transform:uppercase;margin-bottom:14px}
+.beta__share-buttons{display:flex;gap:10px;flex-wrap:wrap}
+.beta__share-btn{
+  font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:1.5px;
+  text-transform:uppercase;font-weight:400;
+  padding:10px 20px;color:#fff;background:transparent;
+  border:1px solid #333;border-radius:2px;cursor:pointer;transition:all .2s;
+  text-decoration:none;display:inline-block;
+}
+.beta__share-btn:hover{border-color:#fff;background:rgba(255,255,255,0.05)}
+.beta__copied{font-size:10px;color:#888;letter-spacing:1px;margin-left:8px;opacity:0;transition:opacity .3s}
 .beta__error{font-size:12px;color:#ff6b6b;margin-top:12px;letter-spacing:0.5px}
 .beta__form button:disabled{opacity:0.5;cursor:not-allowed}
 .beta__form input:disabled{opacity:0.5}

@@ -3,7 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HEAN — Beta</title>
+  <title>HEAN — The lossless audio player macOS deserves</title>
+  <meta name="description" content="Bit-perfect lossless audio player for macOS, built in Rust. CoreAudio Integer Mode, FLAC/DSD/ALAC support, under 80MB. Join the beta." />
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="HEAN — Hear everything. Alter nothing." />
+  <meta property="og:description" content="The lossless audio player macOS deserves — built in Rust. Bit-perfect playback, every format, every DAC. Join 50 beta testers." />
+  <meta property="og:url" content="https://thomasdugue.github.io/noir-landing/" />
+  <meta property="og:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="HEAN — Hear everything. Alter nothing." />
+  <meta name="twitter:description" content="Bit-perfect lossless audio player for macOS, built in Rust. Join the beta." />
+  <meta name="twitter:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text y='70' x='15' font-size='60' fill='white' font-family='monospace'>H</text></svg>" />
+
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -352,7 +372,7 @@ function IconGlobe({ size = 28 }) {
 }
 
 // ═══════════════════════════════════════════════
-// APP MOCKUP (B&W CSS recreation)
+// APP SCREENSHOT
 // ═══════════════════════════════════════════════
 function AppMockup() {
   const [r, v] = useReveal(0.15);
@@ -362,78 +382,13 @@ function AppMockup() {
         <div className="mockup__label">
           <span className="label">THE APP</span>
         </div>
-        <div className="mockup__window">
-          {/* Title bar */}
-          <div className="mockup__titlebar">
-            <div className="mockup__dots">
-              <span /><span /><span />
-            </div>
-            <span className="mockup__title">Hean Desktop</span>
-          </div>
-          {/* Body */}
-          <div className="mockup__body">
-            {/* Sidebar */}
-            <div className="mockup__sidebar">
-              <div className="mockup__search">
-                <span className="mockup__search-icon">⌕</span>
-                <span className="mockup__search-text">Search</span>
-              </div>
-              <div className="mockup__nav-items">
-                {["Library", "Albums", "Artists", "Playlists", "Folders"].map((item, i) => (
-                  <div key={i} className={`mockup__nav-item${i === 1 ? " active" : ""}`}>{item}</div>
-                ))}
-              </div>
-              <div className="mockup__sidebar-section">
-                <div className="mockup__sidebar-label">PLAYLISTS</div>
-                {["Jazz Essentials", "Late Night", "Reference Tracks"].map((p, i) => (
-                  <div key={i} className="mockup__nav-item mockup__nav-item--sub">{p}</div>
-                ))}
-              </div>
-            </div>
-            {/* Main content */}
-            <div className="mockup__main">
-              {/* Album grid */}
-              <div className="mockup__albums-label">Albums</div>
-              <div className="mockup__album-grid">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="mockup__album">
-                    <div className="mockup__album-art" style={{ opacity: 0.15 + (i % 4) * 0.1 }} />
-                    <div className="mockup__album-title" />
-                    <div className="mockup__album-artist" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          {/* Player bar */}
-          <div className="mockup__player">
-            <div className="mockup__player-left">
-              <div className="mockup__player-art" />
-              <div className="mockup__player-info">
-                <div className="mockup__player-track">Kind of Blue</div>
-                <div className="mockup__player-artist">Miles Davis</div>
-              </div>
-            </div>
-            <div className="mockup__player-center">
-              <div className="mockup__player-controls">
-                <span>⏮</span>
-                <span className="mockup__play-btn">▶</span>
-                <span>⏭</span>
-              </div>
-              <div className="mockup__progress">
-                <div className="mockup__progress-bar" />
-                <div className="mockup__progress-fill" />
-              </div>
-              <div className="mockup__player-time">
-                <span>2:34</span>
-                <span>9:22</span>
-              </div>
-            </div>
-            <div className="mockup__player-right">
-              <span className="mockup__badge-format">FLAC</span>
-              <span className="mockup__badge-res">24/96</span>
-            </div>
-          </div>
+        <div className="mockup__screenshot-wrap">
+          <img
+            src="app-screenshot.png"
+            alt="Hean Desktop — lossless audio player for macOS"
+            className="mockup__screenshot"
+            loading="lazy"
+          />
         </div>
         <div className="mockup__caption">
           Beta build — macOS Sonoma / Sequoia
@@ -503,7 +458,22 @@ function Nav() {
 // ═══════════════════════════════════════════════
 // HERO
 // ═══════════════════════════════════════════════
+function useSpotsLeft(total = 50) {
+  const [left, setLeft] = useState(total);
+  useEffect(() => {
+    if (!supabase) return;
+    supabase
+      .from("subscribers")
+      .select("id", { count: "exact", head: true })
+      .then(({ count }) => {
+        if (typeof count === "number") setLeft(Math.max(total - count, 0));
+      });
+  }, []);
+  return left;
+}
+
 function Hero() {
+  const spotsLeft = useSpotsLeft(50);
   return (
     <section className="hero" id="hero">
       <BitFieldCanvas />
@@ -526,8 +496,8 @@ function Hero() {
         </p>
         <div className="hero__countdown">
           <div className="hero__countdown-item">
-            <span className="hero__countdown-val">50</span>
-            <span className="hero__countdown-label">SPOTS</span>
+            <span className="hero__countdown-val">{spotsLeft}</span>
+            <span className="hero__countdown-label">SPOTS LEFT</span>
           </div>
           <div className="hero__countdown-sep" />
           <div className="hero__countdown-item">
@@ -1412,90 +1382,28 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 
 /* ─── APP MOCKUP ─── */
-.mockup{padding:80px 32px 100px;max-width:900px;margin:0 auto}
+.mockup{padding:80px 32px 100px;max-width:1000px;margin:0 auto}
 .mockup__inner{opacity:0;transform:translateY(24px);transition:all .9s ease}
 .mockup__inner.vis{opacity:1;transform:translateY(0)}
 .mockup__label{margin-bottom:32px}
-.mockup__window{
-  border:1px solid #222;border-radius:6px;overflow:hidden;
-  background:#0a0a0a;
-  box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.03);
+.mockup__screenshot-wrap{
+  position:relative;border-radius:8px;overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06);
 }
-.mockup__titlebar{
-  display:flex;align-items:center;padding:12px 16px;
-  background:#111;border-bottom:1px solid #1a1a1a;gap:12px;
+.mockup__screenshot-wrap::after{
+  content:'';position:absolute;inset:0;
+  border-radius:8px;pointer-events:none;
+  box-shadow:inset 0 0 60px rgba(0,0,0,0.3);
 }
-.mockup__dots{display:flex;gap:6px}
-.mockup__dots span{width:10px;height:10px;border-radius:50%;background:#222;border:1px solid #333}
-.mockup__title{font-size:11px;color:#444;letter-spacing:1px;flex:1;text-align:center;margin-right:40px}
-.mockup__body{display:flex;min-height:280px}
-.mockup__sidebar{
-  width:180px;border-right:1px solid #151515;padding:16px 0;
-  background:#0d0d0d;flex-shrink:0;
+.mockup__screenshot{
+  display:block;width:100%;height:auto;border-radius:8px;
 }
-.mockup__search{
-  display:flex;align-items:center;gap:6px;padding:6px 14px;margin:0 10px 16px;
-  border:1px solid #1a1a1a;border-radius:4px;
-}
-.mockup__search-icon{font-size:11px;color:#333}
-.mockup__search-text{font-size:10px;color:#333;letter-spacing:0.5px}
-.mockup__nav-items{margin-bottom:20px}
-.mockup__nav-item{
-  padding:5px 18px;font-size:10px;color:#555;letter-spacing:0.5px;
-  cursor:default;transition:color .15s;
-}
-.mockup__nav-item.active{color:#fff;background:rgba(255,255,255,0.03)}
-.mockup__nav-item--sub{font-size:9px;color:#333;padding:4px 24px}
-.mockup__sidebar-section{border-top:1px solid #151515;padding-top:12px;margin-top:8px}
-.mockup__sidebar-label{font-size:8px;letter-spacing:2px;color:#333;padding:4px 18px 8px;text-transform:uppercase}
-.mockup__main{flex:1;padding:16px 20px;overflow:hidden}
-.mockup__albums-label{font-size:10px;letter-spacing:2px;color:#444;margin-bottom:16px;text-transform:uppercase}
-.mockup__album-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.mockup__album{overflow:hidden}
-.mockup__album-art{
-  width:100%;aspect-ratio:1;background:#151515;border-radius:2px;
-  margin-bottom:6px;
-}
-.mockup__album-title{width:70%;height:6px;background:#1a1a1a;border-radius:2px;margin-bottom:3px}
-.mockup__album-artist{width:50%;height:5px;background:#111;border-radius:2px}
-.mockup__player{
-  display:flex;align-items:center;padding:10px 16px;
-  border-top:1px solid #151515;background:#0a0a0a;gap:16px;
-}
-.mockup__player-left{display:flex;align-items:center;gap:10px;min-width:160px}
-.mockup__player-art{width:32px;height:32px;background:#1a1a1a;border-radius:2px}
-.mockup__player-info{overflow:hidden}
-.mockup__player-track{font-size:10px;color:#ccc;letter-spacing:0.3px;white-space:nowrap}
-.mockup__player-artist{font-size:9px;color:#444;letter-spacing:0.3px}
-.mockup__player-center{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
-.mockup__player-controls{display:flex;align-items:center;gap:16px;font-size:10px;color:#555}
-.mockup__play-btn{font-size:14px;color:#fff}
-.mockup__progress{width:100%;max-width:300px;height:2px;background:#1a1a1a;border-radius:1px;position:relative}
-.mockup__progress-fill{position:absolute;left:0;top:0;height:100%;width:35%;background:#fff;border-radius:1px}
-.mockup__player-time{display:flex;justify-content:space-between;width:100%;max-width:300px;font-size:8px;color:#333}
-.mockup__player-right{display:flex;align-items:center;gap:8px;min-width:100px;justify-content:flex-end}
-.mockup__badge-format,.mockup__badge-res{
-  font-size:8px;letter-spacing:1px;color:#555;
-  border:1px solid #222;padding:2px 6px;border-radius:2px;
+.mockup__caption{
+  text-align:center;margin-top:20px;font-size:10px;letter-spacing:2px;color:#777;
 }
 
 @media(max-width:768px){
   .mockup{padding:40px 16px 60px}
-  .mockup__body{flex-direction:column}
-  .mockup__sidebar{width:100%;border-right:none;border-bottom:1px solid #151515;padding:12px 0;min-height:auto}
-  .mockup__nav-items{display:flex;gap:0;overflow-x:auto;padding:0 10px}
-  .mockup__nav-item{white-space:nowrap;padding:5px 12px}
-  .mockup__sidebar-section{display:none}
-  .mockup__album-grid{grid-template-columns:repeat(3,1fr);gap:8px}
-  .mockup__main{padding:12px 14px}
-  .mockup__player{flex-wrap:wrap;padding:8px 12px}
-  .mockup__player-left{min-width:auto}
-  .mockup__player-right{min-width:auto}
-  .mockup__player-center{order:3;width:100%;margin-top:4px}
-}
-
-.mockup__caption{
-  text-align:center;margin-top:20px;font-size:10px;letter-spacing:2px;color:#777;
 }
 
 /* ─── ROADMAP ─── */

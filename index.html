@@ -338,6 +338,51 @@ function Logo({ size = 32, color = "#fff" }) {
 }
 
 // ═══════════════════════════════════════════════
+// TEXT SCRAMBLE EFFECT
+// ═══════════════════════════════════════════════
+const scrambleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+function TextScramble({ children, duration = 0.8, speed = 0.04, delay = 0, className }) {
+  const [displayText, setDisplayText] = useState("");
+  const [started, setStarted] = useState(false);
+  const text = children;
+
+  useEffect(() => {
+    const t = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!started) return;
+    const steps = duration / speed;
+    let step = 0;
+    const interval = setInterval(() => {
+      let scrambled = "";
+      const progress = step / steps;
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === " ") {
+          scrambled += " ";
+        } else if (progress * text.length > i) {
+          scrambled += text[i];
+        } else {
+          scrambled += scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+        }
+      }
+      setDisplayText(scrambled);
+      step++;
+      if (step > steps) {
+        clearInterval(interval);
+        setDisplayText(text);
+      }
+    }, speed * 1000);
+    return () => clearInterval(interval);
+  }, [started, text, duration, speed]);
+
+  if (!started) return <span className={className} style={{ opacity: 0 }}>{text}</span>;
+  return <span className={className}>{displayText}</span>;
+}
+
+// ═══════════════════════════════════════════════
 // TYPING EFFECT
 // ═══════════════════════════════════════════════
 function TypedText({ text, delay = 0, speed = 40 }) {
@@ -547,9 +592,9 @@ function Hero() {
           <Logo size={48} color="#fff" />
         </div>
         <h1 className="hero__h1">
-          <span className="hero__line hero__line--1">Hear everything</span>
+          <TextScramble className="hero__line hero__line--1" delay={500} duration={1} speed={0.04}>Hear everything</TextScramble>
           <br />
-          <span className="hero__line hero__line--2">Alter nothing</span>
+          <TextScramble className="hero__line hero__line--2" delay={800} duration={1} speed={0.04}>Alter nothing</TextScramble>
         </h1>
         <p className="hero__p">
           The lossless audio player macOS deserves — built in Rust.<br/>
@@ -1229,10 +1274,9 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   line-height:1.1;letter-spacing:-2px;
   margin-bottom:32px;white-space:nowrap;
 }
-.hero__line{opacity:0;animation:slideUp 0.8s ease-out forwards}
-.hero__line--1{animation-delay:0.5s}
-.hero__line--2{animation-delay:0.7s;color:#999}
-@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero__line{display:inline-block}
+.hero__line--1{}
+.hero__line--2{color:#999}
 
 .hero__p{
   font-size:clamp(14px,1.8vw,16px);color:#aaa;

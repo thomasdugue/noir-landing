@@ -7,11 +7,30 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
   <div id="root"></div>
   <script type="text/babel" data-type="module">
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ═══════════════════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════════════════
+// 1. Créez un projet sur https://supabase.com
+// 2. Créez une table "subscribers" avec le SQL suivant :
+//    CREATE TABLE subscribers (
+//      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+//      email TEXT UNIQUE NOT NULL,
+//      created_at TIMESTAMPTZ DEFAULT now()
+//    );
+//    ALTER TABLE subscribers ENABLE ROW LEVEL SECURITY;
+//    CREATE POLICY "Allow anonymous inserts" ON subscribers FOR INSERT WITH CHECK (true);
+// 3. Remplacez les valeurs ci-dessous par celles de votre projet
+//    (Settings → API dans le dashboard Supabase)
+const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ═══════════════════════════════════════════════
 // FONTS
@@ -810,12 +829,36 @@ function Quote() {
 // ═══════════════════════════════════════════════
 function BetaCTA() {
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  const [errorMsg, setErrorMsg] = useState("");
   const [r, v] = useReveal();
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    if (email.includes("@")) setSent(true);
+    if (!email.includes("@")) return;
+
+    setStatus("loading");
+    setErrorMsg("");
+
+    try {
+      const { error } = await supabase
+        .from("subscribers")
+        .insert([{ email: email.trim().toLowerCase() }]);
+
+      if (error) {
+        if (error.code === "23505") {
+          // Unique constraint — email already exists
+          setStatus("success");
+        } else {
+          throw error;
+        }
+      } else {
+        setStatus("success");
+      }
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -832,7 +875,7 @@ function BetaCTA() {
           before release. Report bugs, suggest features, break things. Early testers
           get the final release for free — no strings attached.
         </p>
-        {sent ? (
+        {status === "success" ? (
           <div className="beta__thanks">
             ✓ You're on the list. We'll reach out soon.
           </div>
@@ -844,9 +887,15 @@ function BetaCTA() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={status === "loading"}
             />
-            <button type="submit">Request Access</button>
+            <button type="submit" disabled={status === "loading"}>
+              {status === "loading" ? "Sending..." : "Request Access"}
+            </button>
           </form>
+        )}
+        {status === "error" && (
+          <div className="beta__error">{errorMsg}</div>
         )}
         <div className="beta__note">
           No spam. No account. Just an email when the build is ready for you.
@@ -907,6 +956,21 @@ function IconDAP({ size = 32 }) {
   );
 }
 
+function IconSmartRadio({ size = 32 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="16" cy="16" r="4" />
+      <circle cx="16" cy="16" r="1.5" fill="#fff" stroke="none" />
+      <path d="M9 9a10 10 0 0 1 14 0" />
+      <path d="M6 6a15 15 0 0 1 20 0" />
+      <path d="M23 23a10 10 0 0 1-14 0" />
+      <path d="M26 26a15 15 0 0 1-20 0" />
+      <line x1="16" y1="20" x2="16" y2="28" />
+      <line x1="12" y1="28" x2="20" y2="28" />
+    </svg>
+  );
+}
+
 // ═══════════════════════════════════════════════
 // ROADMAP
 // ═══════════════════════════════════════════════
@@ -933,6 +997,12 @@ const roadmapItems = [
     icon: IconDAP,
     title: "DAP Transfer",
     body: "Sync and transfer your lossless library to portable audio players. Format conversion, playlist export, metadata preserved.",
+    status: "PLANNED",
+  },
+  {
+    icon: IconSmartRadio,
+    title: "Smart Radios",
+    body: "Generate an endless playlist from any track. Pick a song, and Hean builds a radio station that matches its mood, tempo, and genre from your own library.",
     status: "PLANNED",
   },
 ];
@@ -982,7 +1052,7 @@ function Footer() {
     <footer className="foot">
       <div className="foot__inner">
         <div className="foot__left">
-          <Logo size={18} color="#555" />
+          <Logo size={18} color="#888" />
           <span>HEAN</span>
         </div>
         <div className="foot__right">
@@ -1014,11 +1084,11 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 .label{
   font-size:10px;letter-spacing:3px;text-transform:uppercase;
-  color:#666;font-weight:400;
+  color:#999;font-weight:400;
 }
 .sect__head{display:flex;flex-direction:column;gap:8px;margin-bottom:60px}
 .sect__title{font-size:clamp(22px,3vw,32px);font-weight:300;letter-spacing:1px;color:#fff;margin:0}
-.sect__sub{font-size:13px;color:#555;font-weight:300;letter-spacing:0.3px;line-height:1.6;max-width:500px}
+.sect__sub{font-size:13px;color:#999;font-weight:300;letter-spacing:0.3px;line-height:1.6;max-width:500px}
 
 @media(max-width:768px){
   .sect__head{margin-bottom:40px}
@@ -1033,7 +1103,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .nav__name{font-size:14px;font-weight:400;letter-spacing:6px}
 .nav__beta{font-size:8px;letter-spacing:2px;color:#000;background:#fff;padding:2px 6px;border-radius:2px;font-weight:600}
 .nav__links{display:flex;align-items:center;gap:28px}
-.nav__links a{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#666;transition:color .2s;font-weight:400}
+.nav__links a{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#999;transition:color .2s;font-weight:400}
 .nav__links a:hover{color:#fff}
 .nav__cta{color:#fff!important;border:1px solid #333;padding:6px 16px!important;border-radius:2px;transition:all .2s!important}
 .nav__cta:hover{background:#fff;color:#000!important;border-color:#fff}
@@ -1060,7 +1130,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .hero__tag{
   display:inline-flex;align-items:center;gap:8px;
   font-size:10px;letter-spacing:3px;text-transform:uppercase;
-  color:#555;margin-bottom:40px;
+  color:#999;margin-bottom:40px;
   animation:fadeIn 1s ease-out 0.2s both;
 }
 .hero__dot{width:5px;height:5px;border-radius:50%;background:#fff;animation:blink 2s ease-in-out infinite}
@@ -1099,7 +1169,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 .hero__countdown-item{display:flex;flex-direction:column;align-items:center;gap:4px}
 .hero__countdown-val{font-size:28px;font-weight:200;letter-spacing:-1px;line-height:1}
-.hero__countdown-label{font-size:8px;letter-spacing:3px;color:#555}
+.hero__countdown-label{font-size:9px;letter-spacing:3px;color:#888}
 .hero__countdown-sep{width:1px;height:32px;background:#222}
 
 .hero__actions{
@@ -1118,7 +1188,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .btn-ghost{
   font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:2px;
   text-transform:uppercase;font-weight:400;
-  padding:14px 28px;color:#555;border:1px solid #222;
+  padding:14px 28px;color:#999;border:1px solid #333;
   border-radius:2px;transition:all .25s;
 }
 .btn-ghost:hover{color:#fff;border-color:#555}
@@ -1130,7 +1200,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   opacity:0;animation:fadeIn 1s ease-out 1.6s both;
 }
 .hero__footer span{
-  font-size:9px;letter-spacing:3px;color:#444;text-transform:uppercase;font-weight:400;
+  font-size:9px;letter-spacing:3px;color:#888;text-transform:uppercase;font-weight:400;
 }
 
 @media(max-width:768px){
@@ -1148,7 +1218,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .about{padding:140px 32px;max-width:900px;margin:0 auto}
 .about__inner{display:grid;grid-template-columns:60px 1fr;gap:32px;opacity:0;transform:translateY(20px);transition:all .8s ease}
 .about__inner.vis{opacity:1;transform:translateY(0)}
-.about__num{font-size:10px;letter-spacing:3px;color:#333;padding-top:6px}
+.about__num{font-size:10px;letter-spacing:3px;color:#777;padding-top:6px}
 .about__lead{font-size:clamp(17px,2.2vw,21px);line-height:1.7;font-weight:300;color:#ccc;margin-bottom:20px}
 .about__sub{font-size:14px;line-height:1.8;color:#777;font-weight:300}
 
@@ -1168,7 +1238,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .feat__top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 .feat__icon{opacity:0.6;transition:opacity .3s}
 .feat__item:hover .feat__icon{opacity:1}
-.feat__id{font-size:9px;letter-spacing:3px;color:#444}
+.feat__id{font-size:9px;letter-spacing:3px;color:#888}
 .feat__title{font-size:16px;font-weight:400;letter-spacing:1px;margin-bottom:12px}
 .feat__body{font-size:13px;line-height:1.8;color:#777;font-weight:300}
 .feat__line{width:20px;height:1px;background:#222;margin-top:24px}
@@ -1187,8 +1257,8 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 .specs__item.vis{opacity:1;transform:translateY(0)}
 .specs__val{font-size:clamp(36px,6vw,64px);font-weight:200;letter-spacing:-2px;line-height:1}
-.specs__unit{font-size:0.4em;color:#555;letter-spacing:0}
-.specs__label{font-size:9px;letter-spacing:3px;color:#555;margin-top:16px;text-transform:uppercase}
+.specs__unit{font-size:0.4em;color:#888;letter-spacing:0}
+.specs__label{font-size:9px;letter-spacing:3px;color:#888;margin-top:16px;text-transform:uppercase}
 
 @media(max-width:768px){
   .specs{padding:60px 20px}
@@ -1206,11 +1276,11 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .signal__icon{margin-bottom:10px;opacity:0.5}
 .signal__step:hover .signal__icon{opacity:1}
 .signal__step-label{display:block;font-size:11px;letter-spacing:3px;font-weight:400;margin-bottom:4px}
-.signal__step-sub{display:block;font-size:9px;color:#555;letter-spacing:1px}
-.signal__arrow{color:#333;font-size:16px;padding:0 8px;opacity:0;transition:opacity .5s ease}
+.signal__step-sub{display:block;font-size:9px;color:#888;letter-spacing:1px}
+.signal__arrow{color:#777;font-size:16px;padding:0 8px;opacity:0;transition:opacity .5s ease}
 .signal__arrow.vis{opacity:1}
 .signal__badge{
-  text-align:center;margin-top:32px;font-size:10px;letter-spacing:3px;color:#333;
+  text-align:center;margin-top:32px;font-size:10px;letter-spacing:3px;color:#777;
   opacity:0;transition:opacity .6s ease .5s;
 }
 .signal__badge.vis{opacity:1}
@@ -1233,19 +1303,19 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .cmp__table{width:100%;border-collapse:collapse;min-width:540px}
 .cmp__corner{background:transparent;border-bottom:1px solid #111}
 .cmp__th{
-  font-size:10px;letter-spacing:3px;font-weight:400;color:#333;
+  font-size:10px;letter-spacing:3px;font-weight:400;color:#888;
   padding:20px 16px;text-align:center;border-bottom:1px solid #111;
 }
 .cmp__th--noir{
   color:#fff;border-top:1px solid #fff;position:relative;
 }
 .cmp__badge{
-  display:block;font-size:8px;letter-spacing:2px;color:#555;margin-top:4px;font-weight:400;
+  display:block;font-size:8px;letter-spacing:2px;color:#888;margin-top:4px;font-weight:400;
 }
 .cmp__row{transition:background .15s}
 .cmp__row:hover{background:rgba(255,255,255,0.01)}
 .cmp__label{
-  font-size:10px;letter-spacing:2px;color:#555;padding:14px 16px;
+  font-size:10px;letter-spacing:2px;color:#999;padding:14px 16px;
   border-bottom:1px solid #080808;white-space:nowrap;font-weight:400;
 }
 .cmp__val{
@@ -1254,10 +1324,10 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 .cmp__val--noir{background:rgba(255,255,255,0.015)}
 .cmp__yes{color:#fff;font-weight:400}
-.cmp__no{color:#333}
-.cmp__txt{color:#555;font-size:10px;letter-spacing:1px}
+.cmp__no{color:#777}
+.cmp__txt{color:#999;font-size:10px;letter-spacing:1px}
 .cmp__note{
-  font-size:11px;color:#555;letter-spacing:1px;margin-top:24px;text-align:center;font-weight:300;
+  font-size:11px;color:#888;letter-spacing:1px;margin-top:24px;text-align:center;font-weight:300;
 }
 
 @media(max-width:768px){
@@ -1279,7 +1349,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .beta{padding:140px 32px;max-width:600px;margin:0 auto}
 .beta__inner{opacity:0;transform:translateY(20px);transition:all .8s ease}
 .beta__inner.vis{opacity:1;transform:translateY(0)}
-.beta__num{font-size:10px;letter-spacing:3px;color:#333;margin-bottom:24px}
+.beta__num{font-size:10px;letter-spacing:3px;color:#777;margin-bottom:24px}
 .beta__h2{font-size:clamp(24px,4vw,36px);font-weight:200;letter-spacing:-1px;margin-bottom:16px}
 .beta__p{font-size:14px;line-height:1.8;color:#777;font-weight:300;margin-bottom:40px}
 .beta__form{display:flex;gap:0;border:1px solid #222;border-radius:2px;overflow:hidden}
@@ -1287,7 +1357,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   flex:1;padding:14px 16px;background:transparent;color:#fff;border:none;
   font-family:'Geist Mono',monospace;font-size:12px;outline:none;letter-spacing:0.5px;font-weight:300;
 }
-.beta__form input::placeholder{color:#333}
+.beta__form input::placeholder{color:#666}
 .beta__form input:focus{background:rgba(255,255,255,0.02)}
 .beta__form button{
   padding:14px 24px;background:#fff;color:#000;border:none;
@@ -1296,7 +1366,10 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 .beta__form button:hover{background:#ddd}
 .beta__thanks{font-size:13px;color:#fff;letter-spacing:1px;padding:20px 0;animation:fadeIn .5s ease-out}
-.beta__note{font-size:10px;color:#555;margin-top:16px;letter-spacing:1px}
+.beta__error{font-size:12px;color:#ff6b6b;margin-top:12px;letter-spacing:0.5px}
+.beta__form button:disabled{opacity:0.5;cursor:not-allowed}
+.beta__form input:disabled{opacity:0.5}
+.beta__note{font-size:10px;color:#888;margin-top:16px;letter-spacing:1px}
 
 @media(max-width:768px){
   .beta{padding:80px 20px}
@@ -1312,7 +1385,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .urgency.vis{opacity:1;transform:translateY(0)}
 .urgency__inner{
   display:inline-flex;align-items:center;gap:10px;
-  font-size:10px;letter-spacing:4px;color:#666;
+  font-size:10px;letter-spacing:4px;color:#999;
 }
 .urgency__dot{
   width:6px;height:6px;border-radius:50%;background:#fff;
@@ -1403,12 +1476,12 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 
 .mockup__caption{
-  text-align:center;margin-top:20px;font-size:10px;letter-spacing:2px;color:#333;
+  text-align:center;margin-top:20px;font-size:10px;letter-spacing:2px;color:#777;
 }
 
 /* ─── ROADMAP ─── */
 .road{padding:100px 32px;max-width:1200px;margin:0 auto}
-.road__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#111}
+.road__grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#111}
 .road__item{
   padding:36px 28px;background:#000;
   opacity:0;transform:translateY(16px);transition:all .6s ease;
@@ -1433,8 +1506,8 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .road__status{margin-bottom:14px}
 .road__badge{
   display:inline-flex;align-items:center;gap:6px;
-  font-size:8px;letter-spacing:2px;color:#444;
-  padding:3px 8px;border:1px solid #1a1a1a;border-radius:2px;
+  font-size:8px;letter-spacing:2px;color:#888;
+  padding:3px 8px;border:1px solid #333;border-radius:2px;
 }
 .road__badge--active{color:#fff;border-color:#333}
 .road__badge-dot{
@@ -1442,15 +1515,18 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   animation:blink 1.5s ease-in-out infinite;
 }
 .road__title{font-size:15px;font-weight:400;letter-spacing:1px;margin-bottom:10px}
-.road__body{font-size:12px;line-height:1.8;color:#666;font-weight:300}
+.road__body{font-size:13px;line-height:1.8;color:#999;font-weight:300}
 .road__note{
-  text-align:center;margin-top:32px;font-size:11px;color:#555;
+  text-align:center;margin-top:32px;font-size:11px;color:#888;
   letter-spacing:1px;font-weight:300;
   opacity:0;transition:opacity .6s ease .4s;
 }
 .road__note.vis{opacity:1}
 
 @media(max-width:1024px){
+  .road__grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:860px){
   .road__grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:768px){
@@ -1474,11 +1550,11 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 /* ─── FOOTER ─── */
 .foot{padding:40px 32px;border-top:1px solid #0a0a0a}
 .foot__inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
-.foot__left{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:4px;color:#333}
-.foot__right{display:flex;align-items:center;gap:0;font-size:10px;color:#444;letter-spacing:1px;font-weight:300}
-.foot__right a{color:#555;transition:color .2s}
+.foot__left{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:4px;color:#888}
+.foot__right{display:flex;align-items:center;gap:0;font-size:10px;color:#888;letter-spacing:1px;font-weight:300}
+.foot__right a{color:#999;transition:color .2s}
 .foot__right a:hover{color:#fff}
-.foot__sep{margin:0 12px;color:#111}
+.foot__sep{margin:0 12px;color:#444}
 
 @media(max-width:768px){
   .foot{padding:32px 20px}

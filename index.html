@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HEAN — The lossless audio player macOS deserves</title>
-  <meta name="description" content="Bit-perfect lossless audio player for macOS, built in Rust. CoreAudio Integer Mode, FLAC/ALAC support, under 80MB. Join the beta." />
+  <meta name="description" content="Bit-perfect lossless audio player for macOS, built in Rust. We're looking for 50 audiophile experts to co-create the ultimate player. Join the founding team." />
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="HEAN — Hear everything. Alter nothing." />
-  <meta property="og:description" content="The lossless audio player macOS deserves — built in Rust. Bit-perfect playback, every format, every DAC. Join 50 beta testers." />
+  <meta property="og:description" content="The lossless audio player macOS deserves — built in Rust. We need 50 audiophile experts to help shape the ultimate player. Join the founding team." />
   <meta property="og:url" content="https://thomasdugue.github.io/noir-landing/" />
   <meta property="og:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -18,7 +18,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="HEAN — Hear everything. Alter nothing." />
-  <meta name="twitter:description" content="Bit-perfect lossless audio player for macOS, built in Rust. Join the beta." />
+  <meta name="twitter:description" content="Bit-perfect lossless audio player for macOS, built in Rust. 50 audiophile experts needed to co-create the ultimate player." />
   <meta name="twitter:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
 
   <!-- Schema.org -->
@@ -187,8 +187,8 @@ function BitFieldCanvas() {
     const handleMouse = (e) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
     window.addEventListener("mousemove", handleMouse, { passive: true });
 
-    // Particle pool
-    const TOTAL = 220;
+    // Particle pool — fewer on mobile for performance
+    const TOTAL = W <= 768 ? 90 : 220;
     const particles = [];
 
     function createParticle() {
@@ -554,7 +554,7 @@ function UrgencyBanner() {
     <div ref={r} className={`urgency${v ? " vis" : ""}`}>
       <div className="urgency__inner">
         <span className="urgency__dot" />
-        <span className="urgency__text">BETA SLOTS LIMITED — LAUNCHING Q1 2026</span>
+        <span className="urgency__text">CALLING AUDIOPHILE EXPERTS — BETA Q1 2026</span>
       </div>
     </div>
   );
@@ -627,15 +627,15 @@ function SpotsProgress({ taken, total = 50 }) {
     <div className="spots">
       <div className="spots__header">
         <span className="spots__count">{remaining}</span>
-        <span className="spots__label">SPOTS LEFT</span>
+        <span className="spots__label">SPOTS AVAILABLE</span>
       </div>
       <div className="spots__bar">
         <div className="spots__fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="spots__hint">
         {remaining <= 0
-          ? "REGISTRATIONS PERMANENTLY CLOSED"
-          : `Only ${remaining} left — no waitlist, no second chance`}
+          ? "THE FOUNDING TEAM IS COMPLETE — THANK YOU"
+          : `${remaining} spots available — join a community of passionate audiophiles`}
       </div>
     </div>
   );
@@ -649,7 +649,7 @@ function Hero() {
       <div className="hero__content">
         <div className="hero__tag hero__tag--big">
           <span className="hero__dot" />
-          <TypedText text="BETA PROGRAM — NOW OPEN" delay={300} speed={30} />
+          <TypedText text="LOOKING FOR EXPERT EARS" delay={300} speed={30} />
         </div>
         <div className="hero__logo">
           <Logo size={48} color="#fff" />
@@ -661,12 +661,12 @@ function Hero() {
         </h1>
         <p className="hero__p">
           The lossless audio player macOS deserves — built in Rust.<br/>
-          Only 50 people will ever get in. After that, the door shuts permanently.
+          We're looking for 50 audiophiles with sharp ears to help shape the future of lossless playback.
         </p>
         <SpotsProgress taken={taken} />
         <div className="hero__actions">
-          <a className="btn-main btn-main--pulse" href="#join">Claim your spot before it's gone →</a>
-          <a className="btn-ghost" href="#about">Why this won't last ↓</a>
+          <a className="btn-main btn-main--pulse" href="#join">Join the founding team →</a>
+          <a className="btn-ghost" href="#about">Discover the project ↓</a>
         </div>
       </div>
       <div className="hero__footer">
@@ -696,10 +696,10 @@ function About() {
             your DAC exactly as the artist encoded them.
           </p>
           <p className="about__sub">
-            We're selecting exactly 50 founding members. Not 51. When the list is full,
-            this entire page goes offline. You'll have direct influence on the final
-            release — report bugs, suggest features, break things. People who miss
-            this will have to pay full price and wait months. Don't be one of them.
+            We're assembling a team of 50 founding members — passionate audiophiles
+            whose ears and expertise will shape the final product. Test early builds,
+            report bugs, suggest features, and help us build the player you've always
+            wanted. Your feedback drives every decision.
           </p>
         </div>
       </div>
@@ -936,7 +936,7 @@ function Compare() {
           </table>
         </div>
         <div className="cmp__note">
-          Founding members get the final release for free — everyone else pays €35. This offer disappears when 50 spots fill.
+          Founding members get the final release for free — and a direct role in shaping the product.
         </div>
         <div className="cmp__source">
           Prices and specs based on publicly available data as of January 2026.
@@ -954,7 +954,7 @@ function Quote() {
   return (
     <section className="quote" ref={r}>
       <blockquote className={`quote__text${v ? " vis" : ""}`}>
-        "When the 50 spots are gone, they're gone.<br/>There is no second wave."
+        "50 audiophiles. One shared mission:<br/>build the player we've always deserved."
       </blockquote>
     </section>
   );
@@ -1016,12 +1016,12 @@ function BetaCTA() {
           <span className="beta__urgent-dot" />
           FOUNDING MEMBER ACCESS
         </div>
-        <h2 className="beta__h2">This closes. For good.</h2>
+        <h2 className="beta__h2">Be part of something rare.</h2>
         <p className="beta__p">
-          We're hand-picking 50 audiophiles. That's it. No waitlist, no extensions,
-          no "sign up for notifications." You get the app before anyone else, direct
-          influence on every feature, and the final release for free. When the last
-          spot fills, this form disappears and never comes back.
+          We're handpicking 50 audiophiles to co-create HEAN. As a founding member,
+          you get early access to every build, a direct line to the development team,
+          and the final release for free. Your expertise and feedback will shape
+          every feature of the app.
         </p>
         {status === "success" ? (
           <div className="beta__success">
@@ -1033,7 +1033,7 @@ function BetaCTA() {
               <div className="beta__share-buttons">
                 <a
                   className="beta__share-btn"
-                  href={`https://x.com/intent/tweet?text=${encodeURIComponent("Just claimed my spot in the HEAN beta — a bit-perfect lossless audio player for macOS, built in Rust. Only 50 spots.\n\nhttps://thomasdugue.github.io/noir-landing/?utm_source=twitter&utm_medium=share")}`}
+                  href={`https://x.com/intent/tweet?text=${encodeURIComponent("Just joined the HEAN founding team — helping shape a bit-perfect lossless audio player for macOS, built in Rust. 50 audiophiles, one mission.\n\nhttps://thomasdugue.github.io/noir-landing/?utm_source=twitter&utm_medium=share")}`}
                   target="_blank"
                   rel="noopener"
                 >
@@ -1072,7 +1072,7 @@ function BetaCTA() {
           <div className="beta__error">{errorMsg}</div>
         )}
         <div className="beta__note">
-          No spam. No account. One shot to get in — that's it.
+          No spam. No account required. Just your ears and your honest feedback.
         </div>
       </div>
     </section>
@@ -1212,7 +1212,7 @@ function Roadmap() {
         })}
       </div>
       <div className={`road__note${v ? " vis" : ""}`}>
-        Only founding members will access these features months before public release.
+        Founding members will be the first to test and shape these upcoming features.
       </div>
     </section>
   );
@@ -1254,7 +1254,12 @@ body{
   background:#000;color:#fff;overflow-x:hidden;
   -webkit-font-smoothing:antialiased;
   font-weight:300;letter-spacing:0.02em;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
 }
+a,button{-webkit-tap-highlight-color:transparent}
 a{color:inherit;text-decoration:none;cursor:pointer}
 ::selection{background:#fff;color:#000}
 
@@ -1267,8 +1272,9 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .sect__sub{font-size:13px;color:#aaa;font-weight:400;letter-spacing:0.3px;line-height:1.6;max-width:500px}
 
 @media(max-width:768px){
-  .sect__head{margin-bottom:40px}
-  .sect__title{font-size:22px}
+  .sect__head{margin-bottom:32px}
+  .sect__title{font-size:20px}
+  .sect__sub{font-size:12px}
 }
 
 /* ─── NAV ─── */
@@ -1292,10 +1298,11 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 @media(max-width:768px){
   .burger{display:block}
-  .nav__links{position:fixed;inset:0;background:rgba(0,0,0,0.98);flex-direction:column;justify-content:center;gap:32px;opacity:0;pointer-events:none;transition:opacity .3s}
+  .nav__links{position:fixed;inset:0;background:rgba(0,0,0,0.98);flex-direction:column;justify-content:center;gap:24px;opacity:0;pointer-events:none;transition:opacity .3s}
   .nav__links.open{opacity:1;pointer-events:all}
-  .nav__links a{font-size:16px;letter-spacing:4px}
-  .nav__inner{padding:0 20px}
+  .nav__links a{font-size:16px;letter-spacing:4px;padding:10px 0;min-height:44px;display:flex;align-items:center;justify-content:center}
+  .nav__cta{padding:12px 24px!important;min-height:44px}
+  .nav__inner{padding:0 16px}
 }
 
 /* ─── HERO ─── */
@@ -1402,10 +1409,14 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 
 @media(max-width:768px){
+  .hero{min-height:calc(100vh - env(safe-area-inset-top));min-height:100svh;padding-top:56px}
+  .hero__content{padding:0 16px}
+  .hero__tag--big{font-size:10px;letter-spacing:2px;padding:8px 14px;max-width:100%;text-align:center}
   .hero__h1{letter-spacing:-1px;white-space:normal;font-size:clamp(28px,8vw,48px)}
-  .hero__actions{flex-direction:column;align-items:center}
-  .btn-main,.btn-ghost{width:100%;max-width:260px;text-align:center}
-  .hero__footer{gap:12px}
+  .hero__p{font-size:14px;margin-bottom:28px}
+  .hero__actions{flex-direction:column;align-items:center;gap:12px}
+  .btn-main,.btn-ghost{width:100%;max-width:280px;text-align:center;padding:16px 24px;font-size:12px}
+  .hero__footer{gap:10px;bottom:20px;padding:0 16px}
   .hero__footer span{font-size:8px;letter-spacing:2px}
 }
 
@@ -1418,8 +1429,10 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .about__sub{font-size:14px;line-height:1.8;color:#aaa;font-weight:400}
 
 @media(max-width:768px){
-  .about{padding:80px 20px}
-  .about__inner{grid-template-columns:1fr;gap:16px}
+  .about{padding:60px 16px}
+  .about__inner{grid-template-columns:1fr;gap:12px}
+  .about__lead{font-size:16px}
+  .about__sub{font-size:13px}
 }
 
 /* ─── FEATURES ─── */
@@ -1439,8 +1452,10 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .feat__line{width:20px;height:1px;background:#222;margin-top:24px}
 
 @media(max-width:768px){
-  .feat{padding:60px 20px}
+  .feat{padding:60px 16px}
   .feat__grid{grid-template-columns:1fr}
+  .feat__item{padding:28px 16px}
+  .feat__body{font-size:12px}
 }
 
 /* ─── SPECS ─── */
@@ -1456,8 +1471,10 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .specs__label{font-size:9px;letter-spacing:3px;color:#888;margin-top:16px;text-transform:uppercase}
 
 @media(max-width:768px){
-  .specs{padding:60px 20px}
+  .specs{padding:60px 16px}
   .specs__grid{grid-template-columns:repeat(2,1fr)}
+  .specs__item{padding:28px 0}
+  .specs__val{font-size:clamp(28px,10vw,48px)}
 }
 
 /* ─── SIGNAL ─── */
@@ -1482,9 +1499,12 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .signal__dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin-right:8px;vertical-align:middle;animation:blink 2s ease-in-out infinite}
 
 @media(max-width:768px){
-  .signal{padding:60px 20px}
-  .signal__flow{flex-direction:column;gap:4px}
-  .signal__arrow{transform:rotate(90deg)}
+  .signal{padding:48px 16px}
+  .signal__flow{flex-direction:column;gap:0}
+  .signal__step{padding:16px 12px}
+  .signal__arrow{transform:rotate(90deg);padding:0 4px;font-size:14px}
+  .signal__step-label{font-size:10px;letter-spacing:2px}
+  .signal__step-sub{font-size:9px}
 }
 
 /* ─── COMPARE ─── */
@@ -1535,10 +1555,13 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 
 @media(max-width:768px){
-  .cmp{padding:60px 20px}
-  .cmp__th{padding:16px 12px;font-size:10px;letter-spacing:2px}
-  .cmp__label{padding:12px 12px;font-size:10px}
-  .cmp__val{padding:12px 12px;font-size:11px}
+  .cmp{padding:60px 12px}
+  .cmp__table{min-width:420px}
+  .cmp__th{padding:12px 8px;font-size:9px;letter-spacing:1.5px}
+  .cmp__label{padding:10px 8px;font-size:9px;letter-spacing:1px}
+  .cmp__val{padding:10px 8px;font-size:10px}
+  .cmp__note{font-size:10px;padding:0 4px}
+  .cmp__source{font-size:8px}
 }
 
 /* ─── QUOTE ─── */
@@ -1550,7 +1573,9 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 .quote__text.vis{opacity:1;transform:scale(1)}
 
-@media(max-width:768px){.quote{padding:80px 20px}}
+@media(max-width:768px){.quote{padding:60px 16px}
+  .quote__text{font-size:clamp(20px,6vw,36px)}
+}
 
 /* ─── BETA CTA ─── */
 .beta{padding:140px 32px;max-width:600px;margin:0 auto}
@@ -1592,9 +1617,13 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .beta__note{font-size:11px;color:#aaa;margin-top:16px;letter-spacing:1px;font-weight:400}
 
 @media(max-width:768px){
-  .beta{padding:80px 20px}
+  .beta{padding:80px 16px}
   .beta__form{flex-direction:column}
-  .beta__form input{border-bottom:1px solid #111}
+  .beta__form input{border-bottom:1px solid #111;font-size:16px;padding:16px}
+  .beta__form button{padding:16px 24px;font-size:12px;min-height:48px}
+  .beta__p{font-size:13px}
+  .beta__share-buttons{flex-direction:column}
+  .beta__share-btn{text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center}
 }
 
 /* ─── URGENCY BANNER ─── */
@@ -1619,6 +1648,12 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   width:8px;height:8px;border-radius:50%;background:#fff;
   box-shadow:0 0 8px rgba(255,255,255,0.5);
   animation:blink 1.5s ease-in-out infinite;
+}
+
+@media(max-width:768px){
+  .urgency{padding:20px 16px}
+  .urgency__text{font-size:10px;letter-spacing:2px}
+  .urgency__inner{gap:8px}
 }
 
 /* ─── APP MOCKUP (3D SCROLL) ─── */
@@ -1656,10 +1691,12 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 }
 
 @media(max-width:768px){
-  .scroll-mockup{height:50rem;padding:8px 12px}
-  .scroll-mockup__card{padding:3px;border-width:2px;border-radius:16px}
-  .scroll-mockup__inner{border-radius:12px}
-  .scroll-mockup__header{padding:0 8px}
+  .scroll-mockup{height:36rem;padding:4px 10px}
+  .scroll-mockup__wrap{padding:20px 0}
+  .scroll-mockup__card{padding:3px;border-width:2px;border-radius:12px}
+  .scroll-mockup__inner{border-radius:8px}
+  .scroll-mockup__header{padding:0 4px;margin-bottom:16px}
+  .scroll-mockup__caption{margin-top:16px;font-size:9px}
 }
 
 /* ─── ROADMAP ─── */
@@ -1713,9 +1750,11 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   .road__grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:768px){
-  .road{padding:60px 20px}
+  .road{padding:60px 16px}
   .road__grid{grid-template-columns:1fr}
-  .road__item{padding:28px 20px}
+  .road__item{padding:24px 16px}
+  .road__title{font-size:14px}
+  .road__body{font-size:12px}
 }
 
 /* ─── BETA URGENT ─── */
@@ -1740,9 +1779,10 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .foot__sep{margin:0 12px;color:#444}
 
 @media(max-width:768px){
-  .foot{padding:32px 20px}
-  .foot__inner{flex-direction:column;gap:16px;text-align:center}
-  .foot__right{flex-wrap:wrap;justify-content:center}
+  .foot{padding:32px 16px;padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+  .foot__inner{flex-direction:column;gap:12px;text-align:center}
+  .foot__right{flex-wrap:wrap;justify-content:center;gap:0;font-size:9px}
+  .foot__sep{margin:0 8px}
 }
 `;
 

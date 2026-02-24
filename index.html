@@ -407,7 +407,7 @@ function UrgencyBanner() {
     <div ref={r} className={`urgency${v ? " vis" : ""}`}>
       <div className="urgency__inner">
         <span className="urgency__dot" />
-        <span>BETA SLOTS LIMITED — LAUNCHING Q1 2026</span>
+        <span>FOUNDING MEMBERS ONLY — ONCE 50 SPOTS FILLED, DOORS CLOSE</span>
       </div>
     </div>
   );
@@ -458,29 +458,49 @@ function Nav() {
 // ═══════════════════════════════════════════════
 // HERO
 // ═══════════════════════════════════════════════
-function useSpotsLeft(total = 50) {
-  const [left, setLeft] = useState(total);
+function useSpotsCount(total = 50) {
+  const [taken, setTaken] = useState(0);
   useEffect(() => {
     if (!supabase) return;
     supabase
       .from("subscribers")
       .select("id", { count: "exact", head: true })
       .then(({ count }) => {
-        if (typeof count === "number") setLeft(Math.max(total - count, 0));
+        if (typeof count === "number") setTaken(Math.min(count, total));
       });
   }, []);
-  return left;
+  return taken;
+}
+
+function SpotsProgress({ taken, total = 50 }) {
+  const pct = Math.min((taken / total) * 100, 100);
+  return (
+    <div className="spots">
+      <div className="spots__header">
+        <span className="spots__count">{taken}<span className="spots__total">/{total}</span></span>
+        <span className="spots__label">SPOTS CLAIMED</span>
+      </div>
+      <div className="spots__bar">
+        <div className="spots__fill" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="spots__hint">
+        {taken >= total
+          ? "REGISTRATIONS CLOSED"
+          : `${total - taken} remaining — once filled, registrations close`}
+      </div>
+    </div>
+  );
 }
 
 function Hero() {
-  const spotsLeft = useSpotsLeft(50);
+  const taken = useSpotsCount(50);
   return (
     <section className="hero" id="hero">
       <BitFieldCanvas />
       <div className="hero__content">
         <div className="hero__tag">
           <span className="hero__dot" />
-          <TypedText text="BETA PROGRAM — NOW OPEN" delay={300} speed={30} />
+          <TypedText text="EXCLUSIVE BETA — 50 SPOTS ONLY" delay={300} speed={30} />
         </div>
         <div className="hero__logo">
           <Logo size={48} color="#fff" />
@@ -491,28 +511,13 @@ function Hero() {
           <span className="hero__line hero__line--2">Alter nothing</span>
         </h1>
         <p className="hero__p">
-          The lossless audio player macOS deserves — built in Rust, launching soon.<br/>
-          We need 50 beta testers before release.
+          The lossless audio player macOS deserves — built in Rust.<br/>
+          Only 50 people will shape this product before launch. Be one of them.
         </p>
-        <div className="hero__countdown">
-          <div className="hero__countdown-item">
-            <span className="hero__countdown-val">{spotsLeft}</span>
-            <span className="hero__countdown-label">SPOTS LEFT</span>
-          </div>
-          <div className="hero__countdown-sep" />
-          <div className="hero__countdown-item">
-            <span className="hero__countdown-val">Q1</span>
-            <span className="hero__countdown-label">LAUNCH</span>
-          </div>
-          <div className="hero__countdown-sep" />
-          <div className="hero__countdown-item">
-            <span className="hero__countdown-val">€0</span>
-            <span className="hero__countdown-label">FOR TESTERS</span>
-          </div>
-        </div>
+        <SpotsProgress taken={taken} />
         <div className="hero__actions">
-          <a className="btn-main btn-main--pulse" href="#join">Join the Beta →</a>
-          <a className="btn-ghost" href="#about">How it works ↓</a>
+          <a className="btn-main btn-main--pulse" href="#join">Claim your spot →</a>
+          <a className="btn-ghost" href="#about">Why join now ↓</a>
         </div>
       </div>
       <div className="hero__footer">
@@ -543,9 +548,10 @@ function About() {
             your DAC exactly as the artist encoded them.
           </p>
           <p className="about__sub">
-            We're in beta and launching very soon. The app is feature-complete — we need
-            audiophiles to stress-test edge cases and shape the final release before launch.
-            This is your chance to influence the product.
+            We're selecting 50 founding members to shape this product before it goes public.
+            You'll have direct influence on the final release — report bugs, suggest features,
+            break things. This isn't just a beta test. It's a chance to be part of the story
+            from day one.
           </p>
         </div>
       </div>
@@ -782,7 +788,7 @@ function Compare() {
           </table>
         </div>
         <div className="cmp__note">
-          Beta testers receive the final release for free. No credit card required.
+          Founding members receive the final release for free. This offer ends when all 50 spots are filled.
         </div>
       </div>
     </section>
@@ -797,7 +803,7 @@ function Quote() {
   return (
     <section className="quote" ref={r}>
       <blockquote className={`quote__text${v ? " vis" : ""}`}>
-        "Your files.<br/>Your DAC.<br/>Your rules."
+        "50 people will shape this.<br/>Make sure you're one of them."
       </blockquote>
     </section>
   );
@@ -856,13 +862,14 @@ function BetaCTA() {
         <div className="beta__num">06</div>
         <div className="beta__urgent">
           <span className="beta__urgent-dot" />
-          ACCEPTING TESTERS NOW
+          FOUNDING MEMBER ACCESS
         </div>
-        <h2 className="beta__h2">Shape the final release.</h2>
+        <h2 className="beta__h2">This won't stay open forever.</h2>
         <p className="beta__p">
-          Hean launches soon and we're looking for 50 audiophiles to stress-test
-          before release. Report bugs, suggest features, break things. Early testers
-          get the final release for free — no strings attached.
+          We're hand-picking 50 audiophiles to join before public launch.
+          You get early access, direct influence on the product, and the final
+          release for free. Once all spots are claimed, this page closes.
+          No second round.
         </p>
         {status === "success" ? (
           <div className="beta__thanks">
@@ -887,7 +894,7 @@ function BetaCTA() {
           <div className="beta__error">{errorMsg}</div>
         )}
         <div className="beta__note">
-          No spam. No account. Just an email when the build is ready for you.
+          No spam. No account. Just your ticket to the founding circle.
         </div>
       </div>
     </section>
@@ -1027,7 +1034,7 @@ function Roadmap() {
         })}
       </div>
       <div className={`road__note${v ? " vis" : ""}`}>
-        Beta testers will get early access to all upcoming features.
+        Founding members get early access to every feature before anyone else.
       </div>
     </section>
   );
@@ -1151,15 +1158,28 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   opacity:0;animation:fadeIn 0.8s ease-out 1s both;
 }
 
-.hero__countdown{
-  display:flex;align-items:center;justify-content:center;gap:24px;
-  margin-bottom:40px;
+
+/* ─── SPOTS PROGRESS ─── */
+.spots{
+  margin-bottom:40px;max-width:340px;margin-left:auto;margin-right:auto;
   opacity:0;animation:fadeIn 0.8s ease-out 1.1s both;
 }
-.hero__countdown-item{display:flex;flex-direction:column;align-items:center;gap:4px}
-.hero__countdown-val{font-size:28px;font-weight:200;letter-spacing:-1px;line-height:1}
-.hero__countdown-label{font-size:9px;letter-spacing:3px;color:#888}
-.hero__countdown-sep{width:1px;height:32px;background:#222}
+.spots__header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.spots__count{font-size:32px;font-weight:200;letter-spacing:-1px;line-height:1}
+.spots__total{font-size:16px;color:#555;font-weight:300}
+.spots__label{font-size:9px;letter-spacing:3px;color:#888;text-transform:uppercase}
+.spots__bar{
+  width:100%;height:2px;background:#1a1a1a;border-radius:1px;overflow:hidden;
+  position:relative;
+}
+.spots__fill{
+  height:100%;background:linear-gradient(90deg,#fff 0%,#888 100%);
+  border-radius:1px;transition:width 1.5s cubic-bezier(0.25,0.46,0.45,0.94);
+  box-shadow:0 0 8px rgba(255,255,255,0.15);
+}
+.spots__hint{
+  margin-top:8px;font-size:10px;letter-spacing:1px;color:#666;text-align:center;
+}
 
 .hero__actions{
   display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
@@ -1194,9 +1214,6 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 @media(max-width:768px){
   .hero__h1{letter-spacing:-1px;white-space:normal;font-size:clamp(28px,8vw,48px)}
-  .hero__countdown{gap:16px}
-  .hero__countdown-val{font-size:22px}
-  .hero__countdown-sep{height:24px}
   .hero__actions{flex-direction:column;align-items:center}
   .btn-main,.btn-ghost{width:100%;max-width:260px;text-align:center}
   .hero__footer{gap:12px}

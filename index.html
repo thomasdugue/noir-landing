@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HEAN — The lossless audio player macOS deserves</title>
-  <meta name="description" content="Bit-perfect lossless audio player for macOS, built in Rust. CoreAudio Integer Mode, FLAC/DSD/ALAC support, under 80MB. Join the beta." />
+  <meta name="description" content="Bit-perfect lossless audio player for macOS, built in Rust. CoreAudio Integer Mode, FLAC/ALAC support, under 80MB. Join the beta." />
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website" />
@@ -407,7 +407,7 @@ function UrgencyBanner() {
     <div ref={r} className={`urgency${v ? " vis" : ""}`}>
       <div className="urgency__inner">
         <span className="urgency__dot" />
-        <span>BETA SLOTS LIMITED — LAUNCHING Q1 2026</span>
+        <span className="urgency__text">BETA SLOTS LIMITED — LAUNCHING Q1 2026</span>
       </div>
     </div>
   );
@@ -458,27 +458,47 @@ function Nav() {
 // ═══════════════════════════════════════════════
 // HERO
 // ═══════════════════════════════════════════════
-function useSpotsLeft(total = 50) {
-  const [left, setLeft] = useState(total);
+function useSpotsCount(total = 50) {
+  const [taken, setTaken] = useState(0);
   useEffect(() => {
     if (!supabase) return;
     supabase
       .from("subscribers")
       .select("id", { count: "exact", head: true })
       .then(({ count }) => {
-        if (typeof count === "number") setLeft(Math.max(total - count, 0));
+        if (typeof count === "number") setTaken(Math.min(count, total));
       });
   }, []);
-  return left;
+  return taken;
+}
+
+function SpotsProgress({ taken, total = 50 }) {
+  const pct = Math.min((taken / total) * 100, 100);
+  return (
+    <div className="spots">
+      <div className="spots__header">
+        <span className="spots__count">{taken}<span className="spots__total">/{total}</span></span>
+        <span className="spots__label">SPOTS CLAIMED</span>
+      </div>
+      <div className="spots__bar">
+        <div className="spots__fill" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="spots__hint">
+        {taken >= total
+          ? "REGISTRATIONS PERMANENTLY CLOSED"
+          : `Only ${total - taken} left — no waitlist, no second chance`}
+      </div>
+    </div>
+  );
 }
 
 function Hero() {
-  const spotsLeft = useSpotsLeft(50);
+  const taken = useSpotsCount(50);
   return (
     <section className="hero" id="hero">
       <BitFieldCanvas />
       <div className="hero__content">
-        <div className="hero__tag">
+        <div className="hero__tag hero__tag--big">
           <span className="hero__dot" />
           <TypedText text="BETA PROGRAM — NOW OPEN" delay={300} speed={30} />
         </div>
@@ -491,34 +511,18 @@ function Hero() {
           <span className="hero__line hero__line--2">Alter nothing</span>
         </h1>
         <p className="hero__p">
-          The lossless audio player macOS deserves — built in Rust, launching soon.<br/>
-          We need 50 beta testers before release.
+          The lossless audio player macOS deserves — built in Rust.<br/>
+          Only 50 people will ever get in. After that, the door shuts permanently.
         </p>
-        <div className="hero__countdown">
-          <div className="hero__countdown-item">
-            <span className="hero__countdown-val">{spotsLeft}</span>
-            <span className="hero__countdown-label">SPOTS LEFT</span>
-          </div>
-          <div className="hero__countdown-sep" />
-          <div className="hero__countdown-item">
-            <span className="hero__countdown-val">Q1</span>
-            <span className="hero__countdown-label">LAUNCH</span>
-          </div>
-          <div className="hero__countdown-sep" />
-          <div className="hero__countdown-item">
-            <span className="hero__countdown-val">€0</span>
-            <span className="hero__countdown-label">FOR TESTERS</span>
-          </div>
-        </div>
+        <SpotsProgress taken={taken} />
         <div className="hero__actions">
-          <a className="btn-main btn-main--pulse" href="#join">Join the Beta →</a>
-          <a className="btn-ghost" href="#about">How it works ↓</a>
+          <a className="btn-main btn-main--pulse" href="#join">Claim your spot before it's gone →</a>
+          <a className="btn-ghost" href="#about">Why this won't last ↓</a>
         </div>
       </div>
       <div className="hero__footer">
         <span>FLAC</span>
         <span>ALAC</span>
-        <span>DSD</span>
         <span>WAV</span>
         <span>AIFF</span>
         <span>24-BIT / 192KHZ</span>
@@ -543,9 +547,10 @@ function About() {
             your DAC exactly as the artist encoded them.
           </p>
           <p className="about__sub">
-            We're in beta and launching very soon. The app is feature-complete — we need
-            audiophiles to stress-test edge cases and shape the final release before launch.
-            This is your chance to influence the product.
+            We're selecting exactly 50 founding members. Not 51. When the list is full,
+            this entire page goes offline. You'll have direct influence on the final
+            release — report bugs, suggest features, break things. People who miss
+            this will have to pay full price and wait months. Don't be one of them.
           </p>
         </div>
       </div>
@@ -578,7 +583,7 @@ const features = [
   {
     id: "04",
     title: "Every format, every DAC",
-    body: "FLAC, ALAC, DSD, WAV, AIFF. USB DACs, AirPlay, built-in output. No account. No internet. No compromise.",
+    body: "FLAC, ALAC, WAV, AIFF. USB DACs, AirPlay, built-in output. No account. No internet. No compromise.",
     icon: "globe",
   },
 ];
@@ -700,7 +705,7 @@ const signalIcons = [IconSource, IconDecode, IconRoute, IconOutput];
 function Signal() {
   const [r, v] = useReveal();
   const steps = ["SOURCE", "DECODE", "ROUTE", "OUTPUT"];
-  const subs = ["FLAC / DSD / ALAC", "Symphonia engine", "CoreAudio Integer", "Bit-perfect DAC"];
+  const subs = ["FLAC / ALAC / WAV", "Symphonia engine", "CoreAudio Integer", "Bit-perfect DAC"];
   return (
     <section className="signal" ref={r}>
       <div className="signal__flow">
@@ -734,7 +739,7 @@ function Signal() {
 const compareRows = [
   { label: "PRICE", noir: "€35 once", aud: "€109/yr", roon: "€155/yr" },
   { label: "BIT-PERFECT", noir: true, aud: true, roon: true },
-  { label: "DSD NATIVE", noir: true, aud: true, roon: true },
+  { label: "GAPLESS PLAYBACK", noir: true, aud: true, roon: true },
   { label: "ACCOUNT REQUIRED", noir: false, aud: true, roon: true },
   { label: "INTERNET REQUIRED", noir: false, aud: "ACTIVATION", roon: "ALWAYS" },
   { label: "MEMORY", noir: "< 80 MB", aud: "~ 800 MB", roon: "~ 1.5 GB" },
@@ -782,7 +787,7 @@ function Compare() {
           </table>
         </div>
         <div className="cmp__note">
-          Beta testers receive the final release for free. No credit card required.
+          Founding members get the final release for free — everyone else pays €35. This offer disappears when 50 spots fill.
         </div>
       </div>
     </section>
@@ -797,7 +802,7 @@ function Quote() {
   return (
     <section className="quote" ref={r}>
       <blockquote className={`quote__text${v ? " vis" : ""}`}>
-        "Your files.<br/>Your DAC.<br/>Your rules."
+        "When the 50 spots are gone, they're gone.<br/>There is no second wave."
       </blockquote>
     </section>
   );
@@ -856,13 +861,14 @@ function BetaCTA() {
         <div className="beta__num">06</div>
         <div className="beta__urgent">
           <span className="beta__urgent-dot" />
-          ACCEPTING TESTERS NOW
+          FOUNDING MEMBER ACCESS
         </div>
-        <h2 className="beta__h2">Shape the final release.</h2>
+        <h2 className="beta__h2">This closes. For good.</h2>
         <p className="beta__p">
-          Hean launches soon and we're looking for 50 audiophiles to stress-test
-          before release. Report bugs, suggest features, break things. Early testers
-          get the final release for free — no strings attached.
+          We're hand-picking 50 audiophiles. That's it. No waitlist, no extensions,
+          no "sign up for notifications." You get the app before anyone else, direct
+          influence on every feature, and the final release for free. When the last
+          spot fills, this form disappears and never comes back.
         </p>
         {status === "success" ? (
           <div className="beta__thanks">
@@ -887,7 +893,7 @@ function BetaCTA() {
           <div className="beta__error">{errorMsg}</div>
         )}
         <div className="beta__note">
-          No spam. No account. Just an email when the build is ready for you.
+          No spam. No account. One shot to get in — that's it.
         </div>
       </div>
     </section>
@@ -1027,7 +1033,7 @@ function Roadmap() {
         })}
       </div>
       <div className={`road__note${v ? " vis" : ""}`}>
-        Beta testers will get early access to all upcoming features.
+        Only founding members will access these features months before public release.
       </div>
     </section>
   );
@@ -1117,11 +1123,22 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 .hero__content{position:relative;z-index:1;text-align:center;padding:0 24px;max-width:700px}
 
 .hero__tag{
-  display:inline-flex;align-items:center;gap:8px;
+  display:inline-flex;align-items:center;gap:10px;
   font-size:10px;letter-spacing:3px;text-transform:uppercase;
   color:#999;margin-bottom:40px;
   animation:fadeIn 1s ease-out 0.2s both;
 }
+.hero__tag--big{
+  font-size:14px;letter-spacing:5px;font-weight:500;
+  color:#fff;
+  padding:10px 24px;
+  border:1px solid rgba(255,255,255,0.25);border-radius:3px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);
+  box-shadow:0 0 20px rgba(255,255,255,0.08),0 0 60px rgba(255,255,255,0.04);
+  text-shadow:0 0 12px rgba(255,255,255,0.5);
+  animation:fadeIn 1s ease-out 0.2s both,shineTag 3s ease-in-out 2s infinite;
+}
+@keyframes shineTag{0%,100%{box-shadow:0 0 20px rgba(255,255,255,0.08),0 0 60px rgba(255,255,255,0.04)}50%{box-shadow:0 0 30px rgba(255,255,255,0.15),0 0 80px rgba(255,255,255,0.06)}}
 .hero__dot{width:5px;height:5px;border-radius:50%;background:#fff;animation:blink 2s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -1151,15 +1168,28 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   opacity:0;animation:fadeIn 0.8s ease-out 1s both;
 }
 
-.hero__countdown{
-  display:flex;align-items:center;justify-content:center;gap:24px;
-  margin-bottom:40px;
+
+/* ─── SPOTS PROGRESS ─── */
+.spots{
+  margin-bottom:40px;max-width:340px;margin-left:auto;margin-right:auto;
   opacity:0;animation:fadeIn 0.8s ease-out 1.1s both;
 }
-.hero__countdown-item{display:flex;flex-direction:column;align-items:center;gap:4px}
-.hero__countdown-val{font-size:28px;font-weight:200;letter-spacing:-1px;line-height:1}
-.hero__countdown-label{font-size:9px;letter-spacing:3px;color:#888}
-.hero__countdown-sep{width:1px;height:32px;background:#222}
+.spots__header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.spots__count{font-size:32px;font-weight:200;letter-spacing:-1px;line-height:1}
+.spots__total{font-size:16px;color:#555;font-weight:300}
+.spots__label{font-size:9px;letter-spacing:3px;color:#888;text-transform:uppercase}
+.spots__bar{
+  width:100%;height:2px;background:#1a1a1a;border-radius:1px;overflow:hidden;
+  position:relative;
+}
+.spots__fill{
+  height:100%;background:linear-gradient(90deg,#fff 0%,#888 100%);
+  border-radius:1px;transition:width 1.5s cubic-bezier(0.25,0.46,0.45,0.94);
+  box-shadow:0 0 8px rgba(255,255,255,0.15);
+}
+.spots__hint{
+  margin-top:8px;font-size:10px;letter-spacing:1px;color:#666;text-align:center;
+}
 
 .hero__actions{
   display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
@@ -1194,9 +1224,6 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 @media(max-width:768px){
   .hero__h1{letter-spacing:-1px;white-space:normal;font-size:clamp(28px,8vw,48px)}
-  .hero__countdown{gap:16px}
-  .hero__countdown-val{font-size:22px}
-  .hero__countdown-sep{height:24px}
   .hero__actions{flex-direction:column;align-items:center}
   .btn-main,.btn-ghost{width:100%;max-width:260px;text-align:center}
   .hero__footer{gap:12px}
@@ -1368,16 +1395,25 @@ a{color:inherit;text-decoration:none;cursor:pointer}
 
 /* ─── URGENCY BANNER ─── */
 .urgency{
-  padding:20px 32px;text-align:center;border-bottom:1px solid #111;
+  padding:28px 32px;text-align:center;
+  border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);
+  background:linear-gradient(180deg,rgba(255,255,255,0.02) 0%,transparent 100%);
   opacity:0;transform:translateY(-8px);transition:all .6s ease;
 }
 .urgency.vis{opacity:1;transform:translateY(0)}
 .urgency__inner{
-  display:inline-flex;align-items:center;gap:10px;
+  display:inline-flex;align-items:center;gap:12px;
   font-size:10px;letter-spacing:4px;color:#999;
 }
+.urgency__text{
+  font-size:14px;letter-spacing:5px;font-weight:500;color:#fff;
+  text-shadow:0 0 10px rgba(255,255,255,0.4);
+  animation:shineText 3s ease-in-out infinite;
+}
+@keyframes shineText{0%,100%{text-shadow:0 0 10px rgba(255,255,255,0.4)}50%{text-shadow:0 0 20px rgba(255,255,255,0.6),0 0 40px rgba(255,255,255,0.15)}}
 .urgency__dot{
-  width:6px;height:6px;border-radius:50%;background:#fff;
+  width:8px;height:8px;border-radius:50%;background:#fff;
+  box-shadow:0 0 8px rgba(255,255,255,0.5);
   animation:blink 1.5s ease-in-out infinite;
 }
 

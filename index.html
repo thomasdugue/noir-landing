@@ -513,20 +513,21 @@ function useSpotsCount(total = 50) {
 }
 
 function SpotsProgress({ taken, total = 50 }) {
+  const remaining = Math.max(total - taken, 0);
   const pct = Math.min((taken / total) * 100, 100);
   return (
     <div className="spots">
       <div className="spots__header">
-        <span className="spots__count">{taken}<span className="spots__total">/{total}</span></span>
-        <span className="spots__label">SPOTS CLAIMED</span>
+        <span className="spots__count">{remaining}</span>
+        <span className="spots__label">SPOTS LEFT</span>
       </div>
       <div className="spots__bar">
         <div className="spots__fill" style={{ width: `${pct}%` }} />
       </div>
       <div className="spots__hint">
-        {taken >= total
+        {remaining <= 0
           ? "REGISTRATIONS PERMANENTLY CLOSED"
-          : `Only ${total - taken} left — no waitlist, no second chance`}
+          : `Only ${remaining} left — no waitlist, no second chance`}
       </div>
     </div>
   );
@@ -1244,8 +1245,7 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   opacity:0;animation:fadeIn 0.8s ease-out 1.1s both;
 }
 .spots__header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
-.spots__count{font-size:32px;font-weight:200;letter-spacing:-1px;line-height:1}
-.spots__total{font-size:16px;color:#555;font-weight:300}
+.spots__count{font-size:40px;font-weight:200;letter-spacing:-1px;line-height:1}
 .spots__label{font-size:9px;letter-spacing:3px;color:#888;text-transform:uppercase}
 .spots__bar{
   width:100%;height:2px;background:#1a1a1a;border-radius:1px;overflow:hidden;

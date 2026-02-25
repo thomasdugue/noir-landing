@@ -68,7 +68,17 @@ const { useState, useEffect, useRef, useCallback, useMemo } = React;
 //    );
 //    ALTER TABLE subscribers ENABLE ROW LEVEL SECURITY;
 //    CREATE POLICY "Allow anonymous inserts" ON subscribers FOR INSERT WITH CHECK (true);
-// 3. Remplacez les valeurs ci-dessous par celles de votre projet
+// 4. Créez une table "feature_requests" pour les suggestions :
+//    CREATE TABLE feature_requests (
+//      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+//      message TEXT NOT NULL,
+//      email TEXT,
+//      join_beta BOOLEAN DEFAULT false,
+//      created_at TIMESTAMPTZ DEFAULT now()
+//    );
+//    ALTER TABLE feature_requests ENABLE ROW LEVEL SECURITY;
+//    CREATE POLICY "Allow anonymous inserts" ON feature_requests FOR INSERT WITH CHECK (true);
+// 5. Remplacez les valeurs ci-dessous par celles de votre projet
 //    (Settings → API dans le dashboard Supabase)
 const SUPABASE_URL = "https://knsuwgllvsvuaigjypjl.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtuc3V3Z2xsdnN2dWFpZ2p5cGpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjUyMTcsImV4cCI6MjA4NzUwMTIxN30.XFMhlAC9uVvyNe7VN59y3UZ4xa0-0wR5DG3MgrxqC_M";
@@ -1214,7 +1224,151 @@ function Roadmap() {
       <div className={`road__note${v ? " vis" : ""}`}>
         Beta testers will be the first to try these features — and get the final app for free.
       </div>
+      <FeatureRequestPopover />
     </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// FEATURE REQUEST POPOVER
+// ═══════════════════════════════════════════════
+function FeatureRequestPopover() {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [joinBeta, setJoinBeta] = useState(false);
+  const [status, setStatus] = useState("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const formRef = useRef(null);
+
+  // Click outside to close
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (formRef.current && !formRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
+  }, [open]);
+
+  // Auto-close on success
+  useEffect(() => {
+    if (status === "success") {
+      const t = setTimeout(() => {
+        setOpen(false);
+        setStatus("idle");
+        setMessage("");
+        setEmail("");
+        setJoinBeta(false);
+      }, 2500);
+      return () => clearTimeout(t);
+    }
+  }, [status]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+
+    setStatus("loading");
+    setErrorMsg("");
+
+    if (!supabase) {
+      console.warn("Supabase not configured — demo mode");
+      setStatus("success");
+      return;
+    }
+
+    try {
+      const payload = {
+        message: message.trim(),
+        email: email.trim().toLowerCase() || null,
+        join_beta: joinBeta,
+      };
+      const { error } = await supabase
+        .from("feature_requests")
+        .insert([payload]);
+
+      if (error) throw error;
+      setStatus("success");
+    } catch (err) {
+      console.error("Feature request error:", err);
+      setStatus("error");
+      setErrorMsg(err.message || "Something went wrong.");
+    }
+  };
+
+  if (!open) {
+    return (
+      <div className="road__cta">
+        <button className="btn-ghost" onClick={() => setOpen(true)}>
+          Suggest a feature
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <React.Fragment>
+      <div className="feat-form__overlay" />
+      <div className="feat-form" ref={formRef}>
+        {status === "success" ? (
+          <div className="feat-form__success">
+            <span className="feat-form__check-icon">✓</span>
+            <span>Thanks! We'll consider your suggestion.</span>
+          </div>
+        ) : (
+          <form className="feat-form__inner" onSubmit={submit}>
+            <div className="feat-form__header">
+              <span className="feat-form__title">SUGGEST A FEATURE</span>
+              <button type="button" className="feat-form__close" onClick={() => setOpen(false)}>✕</button>
+            </div>
+            <textarea
+              className="feat-form__textarea"
+              placeholder="What would you like to see next?"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              required
+              disabled={status === "loading"}
+              rows={4}
+            />
+            <input
+              type="email"
+              className="feat-form__email"
+              placeholder="your@email.com (optional)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={status === "loading"}
+            />
+            <label className="feat-form__checkbox">
+              <input
+                type="checkbox"
+                checked={joinBeta}
+                onChange={(e) => setJoinBeta(e.target.checked)}
+                disabled={status === "loading"}
+              />
+              <span className="feat-form__checkbox-box" />
+              <span>I'd like to join the beta too</span>
+            </label>
+            {status === "error" && (
+              <div className="feat-form__error">{errorMsg}</div>
+            )}
+            <button
+              type="submit"
+              className="feat-form__submit"
+              disabled={status === "loading"}
+            >
+              {status === "loading" ? "Sending..." : "Send"}
+            </button>
+          </form>
+        )}
+      </div>
+    </React.Fragment>
   );
 }
 
@@ -1755,6 +1909,101 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   .road__item{padding:24px 16px}
   .road__title{font-size:14px}
   .road__body{font-size:12px}
+}
+
+/* ─── FEATURE REQUEST POPOVER ─── */
+.road__cta{text-align:center;margin-top:28px}
+
+.feat-form__overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  animation:featOverlayIn .25s ease both;
+}
+@keyframes featOverlayIn{from{opacity:0}to{opacity:1}}
+
+.feat-form{
+  position:fixed;z-index:201;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:90%;max-width:420px;
+  background:#0a0a0a;border:1px solid #222;border-radius:6px;
+  padding:0;
+  animation:featFormIn .3s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes featFormIn{
+  from{opacity:0;transform:translate(-50%,-50%) scale(0.92)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+
+.feat-form__inner{display:flex;flex-direction:column;gap:16px;padding:24px}
+
+.feat-form__header{display:flex;justify-content:space-between;align-items:center}
+.feat-form__title{font-size:10px;letter-spacing:3px;color:#888;font-weight:400;text-transform:uppercase}
+.feat-form__close{
+  background:none;border:none;color:#666;font-size:14px;cursor:pointer;
+  padding:4px 8px;transition:color .2s;font-family:'Geist Mono',monospace;
+}
+.feat-form__close:hover{color:#fff}
+
+.feat-form__textarea{
+  width:100%;padding:12px 14px;background:#111;color:#fff;border:1px solid #222;
+  border-radius:3px;font-family:'Geist Mono',monospace;font-size:13px;
+  font-weight:300;letter-spacing:0.3px;line-height:1.6;
+  resize:vertical;min-height:90px;outline:none;transition:border-color .2s;
+}
+.feat-form__textarea::placeholder{color:#555}
+.feat-form__textarea:focus{border-color:#444}
+
+.feat-form__email{
+  width:100%;padding:12px 14px;background:#111;color:#fff;border:1px solid #222;
+  border-radius:3px;font-family:'Geist Mono',monospace;font-size:13px;
+  font-weight:300;letter-spacing:0.3px;outline:none;transition:border-color .2s;
+}
+.feat-form__email::placeholder{color:#555}
+.feat-form__email:focus{border-color:#444}
+
+.feat-form__checkbox{
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  font-size:12px;color:#aaa;letter-spacing:0.3px;font-weight:400;
+}
+.feat-form__checkbox input{display:none}
+.feat-form__checkbox-box{
+  width:16px;height:16px;border:1px solid #444;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.feat-form__checkbox input:checked + .feat-form__checkbox-box{
+  background:#fff;border-color:#fff;
+}
+.feat-form__checkbox input:checked + .feat-form__checkbox-box::after{
+  content:'✓';color:#000;font-size:11px;font-weight:600;
+}
+
+.feat-form__submit{
+  width:100%;padding:13px 24px;background:#fff;color:#000;border:none;
+  font-family:'Geist Mono',monospace;font-size:11px;font-weight:400;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;
+  border-radius:2px;transition:background .2s;
+}
+.feat-form__submit:hover{background:#ddd}
+.feat-form__submit:disabled{opacity:0.5;cursor:not-allowed}
+
+.feat-form__error{font-size:11px;color:#ff6b6b;letter-spacing:0.5px}
+
+.feat-form__success{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;padding:40px 24px;text-align:center;
+  animation:featSuccessIn .4s ease both;
+}
+@keyframes featSuccessIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.feat-form__check-icon{font-size:20px;color:#fff}
+.feat-form__success span:last-child{font-size:13px;color:#aaa;letter-spacing:0.5px;font-weight:400}
+
+@media(max-width:768px){
+  .feat-form{width:calc(100% - 32px);max-width:none}
+  .feat-form__inner{padding:20px 16px;gap:14px}
+  .feat-form__textarea{font-size:16px;min-height:100px}
+  .feat-form__email{font-size:16px}
+  .feat-form__submit{padding:16px 24px;font-size:12px;min-height:48px}
 }
 
 /* ─── BETA URGENT ─── */

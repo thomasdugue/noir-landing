@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HEAN — The lossless audio player macOS deserves</title>
-  <meta name="description" content="Bit-perfect lossless audio player for macOS, built in Rust. We're looking for 50 audiophile experts to co-create the ultimate player. Join the founding team." />
+  <meta name="description" content="Bit-perfect lossless audio player for macOS, built in Rust. 50 beta testers needed — share your feedback, get the final app for free." />
 
   <!-- OpenGraph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="HEAN — Hear everything. Alter nothing." />
-  <meta property="og:description" content="The lossless audio player macOS deserves — built in Rust. We need 50 audiophile experts to help shape the ultimate player. Join the founding team." />
+  <meta property="og:description" content="The lossless audio player macOS deserves — built in Rust. 50 beta testers needed — share your feedback, get the final app for free." />
   <meta property="og:url" content="https://thomasdugue.github.io/noir-landing/" />
   <meta property="og:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -18,7 +18,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="HEAN — Hear everything. Alter nothing." />
-  <meta name="twitter:description" content="Bit-perfect lossless audio player for macOS, built in Rust. 50 audiophile experts needed to co-create the ultimate player." />
+  <meta name="twitter:description" content="Bit-perfect lossless audio player for macOS, built in Rust. 50 beta testers needed — share your feedback, get the final app for free." />
   <meta name="twitter:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
 
   <!-- Schema.org -->
@@ -661,11 +661,11 @@ function Hero() {
         </h1>
         <p className="hero__p">
           The lossless audio player macOS deserves — built in Rust.<br/>
-          We're looking for 50 audiophiles with sharp ears to help shape the future of lossless playback.
+          50 audiophiles test the beta, share their feedback — and get the final app for free.
         </p>
         <SpotsProgress taken={taken} />
         <div className="hero__actions">
-          <a className="btn-main btn-main--pulse" href="#join">Join the founding team →</a>
+          <a className="btn-main btn-main--pulse" href="#join">Test the beta, get the app free →</a>
           <a className="btn-ghost" href="#about">Discover the project ↓</a>
         </div>
       </div>
@@ -696,10 +696,10 @@ function About() {
             your DAC exactly as the artist encoded them.
           </p>
           <p className="about__sub">
-            We're assembling a team of 50 founding members — passionate audiophiles
-            whose ears and expertise will shape the final product. Test early builds,
-            report bugs, suggest features, and help us build the player you've always
-            wanted. Your feedback drives every decision.
+            We need 50 audiophiles to put Hean to the test. Try early builds,
+            report bugs, suggest features — your feedback shapes the final product.
+            In return, you get the finished app completely free. Your ears,
+            your expertise, our code.
           </p>
         </div>
       </div>
@@ -936,7 +936,7 @@ function Compare() {
           </table>
         </div>
         <div className="cmp__note">
-          Founding members get the final release for free — and a direct role in shaping the product.
+          Beta testers get the final release for free (worth €35) — in exchange for their feedback.
         </div>
         <div className="cmp__source">
           Prices and specs based on publicly available data as of January 2026.
@@ -954,7 +954,7 @@ function Quote() {
   return (
     <section className="quote" ref={r}>
       <blockquote className={`quote__text${v ? " vis" : ""}`}>
-        "50 audiophiles. One shared mission:<br/>build the player we've always deserved."
+        "Test the beta. Share your feedback.<br/>Get the app for free."
       </blockquote>
     </section>
   );
@@ -1016,12 +1016,12 @@ function BetaCTA() {
           <span className="beta__urgent-dot" />
           FOUNDING MEMBER ACCESS
         </div>
-        <h2 className="beta__h2">Be part of something rare.</h2>
+        <h2 className="beta__h2">Your feedback, our code, your app — free.</h2>
         <p className="beta__p">
-          We're handpicking 50 audiophiles to co-create HEAN. As a founding member,
-          you get early access to every build, a direct line to the development team,
-          and the final release for free. Your expertise and feedback will shape
-          every feature of the app.
+          We're looking for 50 audiophiles to test HEAN before launch.
+          Try early builds, tell us what works and what doesn't, help us get
+          every detail right. In return, you get the final app for free —
+          no subscription, no conditions.
         </p>
         {status === "success" ? (
           <div className="beta__success">
@@ -1033,7 +1033,7 @@ function BetaCTA() {
               <div className="beta__share-buttons">
                 <a
                   className="beta__share-btn"
-                  href={`https://x.com/intent/tweet?text=${encodeURIComponent("Just joined the HEAN founding team — helping shape a bit-perfect lossless audio player for macOS, built in Rust. 50 audiophiles, one mission.\n\nhttps://thomasdugue.github.io/noir-landing/?utm_source=twitter&utm_medium=share")}`}
+                  href={`https://x.com/intent/tweet?text=${encodeURIComponent("I'm testing HEAN — a bit-perfect lossless audio player for macOS, built in Rust. 50 beta testers get the final app for free.\n\nhttps://thomasdugue.github.io/noir-landing/?utm_source=twitter&utm_medium=share")}`}
                   target="_blank"
                   rel="noopener"
                 >
@@ -1212,7 +1212,7 @@ function Roadmap() {
         })}
       </div>
       <div className={`road__note${v ? " vis" : ""}`}>
-        Founding members will be the first to test and shape these upcoming features.
+        Beta testers will be the first to try these features — and get the final app for free.
       </div>
     </section>
   );

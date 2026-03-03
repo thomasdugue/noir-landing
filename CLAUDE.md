@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Landing page for **HEAN** — a lossless audio player for macOS built in Rust. Currently in beta recruitment mode (50 founding member spots).
+Landing page for **HEAN** — a lossless audio player for macOS built in Rust. Currently in beta recruitment mode (50 beta tester spots). Pricing strategy: €39 early adopter price, increasing to €49 after ~500 licenses. Beta testers get the app for free in exchange for feedback.
 
 ## Tech Stack
 
@@ -34,7 +34,8 @@ There is no build, lint, or test command. Verify changes by opening in a browser
 - `app-screenshot.png` — screenshot used by 3D scroll mockup
 - `NoirLanding.jsx` — React component archive (for Claude artifact previews)
 - `v1-archive.html` — archived V1 promotional page
-- `DECISIONS.md` — design decisions and rationale
+- `DECISIONS.md` — design decisions and rationale (note: some file references are stale, `index.html` is the active page)
+- `robots.txt` / `sitemap.xml` — SEO files
 - `.github/workflows/deploy.yml` — GitHub Pages deploy on push to main/master
 
 ### Code Structure in index.html
@@ -45,7 +46,7 @@ All code is in a single `<script type="text/babel">` block. Order matters:
 2. **Custom hooks** — `useFonts()`, `useReveal()` (IntersectionObserver), `useScrollProgress()` (scroll-driven transforms), `lerp()` (value interpolation)
 3. **Canvas animation** — `BitFieldCanvas` (220 particles desktop / 90 mobile, bits-to-signal metaphor)
 4. **UI utilities** — `Logo`, `TextScramble`, `TypedText`, feature icon SVGs
-5. **Section components** in render order: Nav → Hero → UrgencyBanner → AppMockup → About → Features → Specs → Signal → Compare → Roadmap → Quote → BetaCTA → Footer
+5. **Section components** in render order: Nav → Hero → UrgencyBanner → AppMockup → About → Features → Specs → Signal → Compare → Roadmap → FeatureRequestPopover → Quote → BetaCTA → Footer
 6. **CSS string constant** (`const css`) injected via `<style>{css}</style>` — all styles are here, not in a separate file
 
 ### Animation Architecture

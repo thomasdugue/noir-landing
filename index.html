@@ -528,6 +528,19 @@ function IconEQ({ size = 28 }) {
   );
 }
 
+function IconLyrics({ size = 28 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 6h14" />
+      <path d="M4 11h18" />
+      <path d="M4 16h12" />
+      <path d="M4 21h16" />
+      <circle cx="22" cy="6" r="3" fill="none" />
+      <path d="M22 9V6" />
+    </svg>
+  );
+}
+
 // ═══════════════════════════════════════════════
 // APP SCREENSHOT — 3D SCROLL REVEAL
 // ═══════════════════════════════════════════════
@@ -798,6 +811,12 @@ const features = [
     body: "FLAC, ALAC, WAV, AIFF, MP3, AAC, OGG Vorbis. USB DACs, built-in output, any CoreAudio device. Gapless playback. No account. No internet. No compromise.",
     icon: "globe",
   },
+  {
+    id: "07",
+    title: "Synchronized lyrics",
+    body: "Time-synced lyrics scroll with the music. Embedded LRC support and automatic fetching. Click any line to jump to that moment — follow every word, in perfect time.",
+    icon: "lyrics",
+  },
 ];
 
 function Features() {
@@ -821,6 +840,7 @@ const featureIcons = {
   globe: IconGlobe,
   nas: IconNAS,
   eq: IconEQ,
+  lyrics: IconLyrics,
 };
 
 function FeatureItem({ id, title, body, icon, idx }) {
@@ -1232,6 +1252,16 @@ function IconSmartRadio({ size = 32 }) {
   );
 }
 
+function IconAirPlay({ size = 32 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 3h22a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H22" />
+      <path d="M10 23H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2" />
+      <polygon points="16,17 24,29 8,29" fill="none" />
+    </svg>
+  );
+}
+
 // ═══════════════════════════════════════════════
 // ROADMAP
 // ═══════════════════════════════════════════════
@@ -1246,6 +1276,12 @@ const roadmapItems = [
     icon: IconMobile,
     title: "iOS & Android Remote",
     body: "Control your desktop player from your phone. Browse library, manage queue, adjust volume — without leaving your couch.",
+    status: "PLANNED",
+  },
+  {
+    icon: IconAirPlay,
+    title: "AirPlay",
+    body: "Stream to HomePod, AirPlay speakers, and Apple TV. Hean handles the handoff — your library, your queue, any room in the house.",
     status: "PLANNED",
   },
   {

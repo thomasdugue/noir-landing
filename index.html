@@ -817,6 +817,12 @@ const features = [
     body: "Time-synced lyrics scroll with the music. Embedded LRC support and automatic fetching. Click any line to jump to that moment — follow every word, in perfect time.",
     icon: "lyrics",
   },
+  {
+    id: "08",
+    title: "AirPlay",
+    body: "Stream to HomePod, AirPlay speakers, and Apple TV. Hean handles the handoff — your library, your queue, any room in the house.",
+    icon: "airplay",
+  },
 ];
 
 function Features() {
@@ -841,6 +847,7 @@ const featureIcons = {
   nas: IconNAS,
   eq: IconEQ,
   lyrics: IconLyrics,
+  airplay: IconAirPlay,
 };
 
 function FeatureItem({ id, title, body, icon, idx }) {
@@ -1276,12 +1283,6 @@ const roadmapItems = [
     icon: IconMobile,
     title: "iOS & Android Remote",
     body: "Control your desktop player from your phone. Browse library, manage queue, adjust volume — without leaving your couch.",
-    status: "PLANNED",
-  },
-  {
-    icon: IconAirPlay,
-    title: "AirPlay",
-    body: "Stream to HomePod, AirPlay speakers, and Apple TV. Hean handles the handoff — your library, your queue, any room in the house.",
     status: "PLANNED",
   },
   {

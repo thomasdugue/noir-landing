@@ -10,8 +10,8 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="HEAN — Hear everything. Alter nothing." />
   <meta property="og:description" content="Bit-perfect lossless player for macOS — built in Rust. Native NAS/SMB, 8-band EQ, Hog Mode. Own it forever, no subscription." />
-  <meta property="og:url" content="https://thomasdugue.github.io/noir-landing/" />
-  <meta property="og:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
+  <meta property="og:url" content="https://hean.app/" />
+  <meta property="og:image" content="https://hean.app/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
 
@@ -19,7 +19,13 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="HEAN — Hear everything. Alter nothing." />
   <meta name="twitter:description" content="Bit-perfect lossless player for macOS — built in Rust. Native NAS/SMB, 8-band EQ, Hog Mode. Own it forever, no subscription." />
-  <meta name="twitter:image" content="https://thomasdugue.github.io/noir-landing/og-image.png" />
+  <meta name="twitter:image" content="https://hean.app/og-image.png" />
+
+  <link rel="canonical" href="https://hean.app/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-title" content="HEAN" />
+  <meta name="application-name" content="HEAN" />
 
   <!-- Schema.org -->
   <script type="application/ld+json">
@@ -53,6 +59,27 @@
 </head>
 <body>
   <div id="root"></div>
+  <noscript>
+    <div style="max-width:800px;margin:0 auto;padding:40px 20px;font-family:system-ui,sans-serif;color:#fff;background:#000">
+      <h1>HEAN — Hear Everything, Alter Nothing</h1>
+      <p>The lossless audio player macOS deserves. Bit-perfect playback, built in Rust.</p>
+      <h2>Features</h2>
+      <ul>
+        <li>Bit-perfect playback — CoreAudio Exclusive Mode (Hog Mode) bypasses macOS mixer</li>
+        <li>7 lossless formats — FLAC, ALAC, WAV, AIFF, DSD (DoP), WavPack, APE</li>
+        <li>8-band parametric EQ with AutoEQ support for 4000+ headphone profiles</li>
+        <li>Native NAS/SMB — browse and play from network drives without mounting</li>
+        <li>Smart Home — rediscover forgotten albums, track your most-played artists</li>
+        <li>Gapless playback with native sample rate switching</li>
+        <li>Built in Rust with Tauri — lightweight, fast, no Electron bloat</li>
+      </ul>
+      <h2>Pricing</h2>
+      <p>One-time purchase: €39. No subscription. Free 30-day trial with all features.</p>
+      <h2>Why HEAN?</h2>
+      <p>HEAN stands for "Hear Everything, Alter Nothing". Your music files reach your DAC bit-for-bit as they were mastered. No resampling, no processing, no compromise. HEAN is the modern alternative to Audirvana and foobar2000 — premium audio quality with a clean, intuitive interface.</p>
+      <p>Available for macOS. Windows coming soon.</p>
+    </div>
+  </noscript>
   <script type="text/babel" data-type="module">
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 

@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Landing page for **HEAN** — a lossless audio player for macOS built in Rust. Currently in beta recruitment mode (50 beta tester spots). Pricing strategy: €39 early adopter price, increasing to €49 after ~500 licenses. Beta testers get the app for free in exchange for feedback.
+Landing page for **HEAN** (hean.app) — a lossless audio player for macOS built in Rust. "Hear Everything, Alter Nothing." Currently in beta recruitment mode (50 beta tester spots). Pricing: €39 early adopter, increasing to €49 after ~500 licenses. Beta testers get the app free in exchange for feedback.
 
 ## Tech Stack
 
 - **Single-file React app** — all JSX, CSS, and logic live in `index.html`
 - React 18 + Babel standalone loaded via CDN (no build step, no bundler)
 - Supabase JS SDK for email signup backend
-- Deployed via GitHub Actions to GitHub Pages
+- Deployed via GitHub Actions to GitHub Pages; domain: `hean.app` (DNS via Cloudflare)
 
 ## Running Locally
 
@@ -28,14 +28,15 @@ There is no build, lint, or test command. Verify changes by opening in a browser
 
 ### Files
 
-- `index.html` — the active landing page (single-file React app with inline styles)
-- `faq.html` — FAQ page (standalone HTML)
-- `updates.html` — Updates page (standalone HTML)
+- `index.html` — the active landing page (single-file React app with inline styles, ~2200 lines)
+- `faq.html` — FAQ page (standalone React-in-HTML, same design system)
+- `updates.html` — Updates/changelog page (standalone React-in-HTML)
 - `app-screenshot.png` — screenshot used by 3D scroll mockup
-- `NoirLanding.jsx` — React component archive (for Claude artifact previews)
-- `v1-archive.html` — archived V1 promotional page
-- `DECISIONS.md` — design decisions and rationale (note: some file references are stale, `index.html` is the active page)
-- `robots.txt` / `sitemap.xml` — SEO files
+- `og-image.png` — OpenGraph social preview image (1200x630)
+- `NoirLanding.jsx` — React component archive (for Claude artifact previews, not deployed)
+- `v1-archive.html` — archived V1 promotional page (color/teal accent theme, not deployed)
+- `DECISIONS.md` — design decisions and rationale (some file references are stale, `index.html` is the active page)
+- `robots.txt` / `sitemap.xml` — SEO files pointing to `hean.app`
 - `.github/workflows/deploy.yml` — GitHub Pages deploy on push to main/master
 
 ### Code Structure in index.html
@@ -48,6 +49,10 @@ All code is in a single `<script type="text/babel">` block. Order matters:
 4. **UI utilities** — `Logo`, `TextScramble`, `TypedText`, feature icon SVGs
 5. **Section components** in render order: Nav → Hero → UrgencyBanner → AppMockup → About → Features → Specs → Signal → Compare → Roadmap → FeatureRequestPopover → Quote → BetaCTA → Footer
 6. **CSS string constant** (`const css`) injected via `<style>{css}</style>` — all styles are here, not in a separate file
+
+### SEO Structure in index.html
+
+The `<head>` contains OpenGraph, Twitter Card, Schema.org (JSON-LD), and standard meta tags all pointing to `hean.app`. A `<noscript>` block after `<div id="root">` provides static HTML fallback content for search engines that don't execute JavaScript.
 
 ### Animation Architecture
 
@@ -68,7 +73,7 @@ Three distinct animation systems coexist:
 
 ### Supabase Integration
 
-- Table `subscribers` with email + timestamp + UTM columns (source, medium, campaign)
+- Tables: `subscribers` (email, timestamp, UTM columns) and `feature_requests` (message, email, join_beta, timestamp)
 - Public anon key (safe to expose) — RLS allows anonymous inserts only
 - `useSpotsCount()` hook queries subscriber count for the progress bar
 

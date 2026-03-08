@@ -62,22 +62,25 @@
   <noscript>
     <div style="max-width:800px;margin:0 auto;padding:40px 20px;font-family:system-ui,sans-serif;color:#fff;background:#000">
       <h1>HEAN — Hear Everything, Alter Nothing</h1>
-      <p>The lossless audio player macOS deserves. Bit-perfect playback, built in Rust.</p>
+      <p>The lossless audio player macOS deserves. Bit-perfect playback, built in Rust. Try free for 30 days — no credit card required.</p>
+      <p style="font-size:12px;color:#888;letter-spacing:2px">Built with Rust & Tauri · Bit-perfect CoreAudio · No subscription, ever</p>
       <h2>Features</h2>
       <ul>
-        <li>Bit-perfect playback — CoreAudio Exclusive Mode (Hog Mode) bypasses macOS mixer</li>
-        <li>7 lossless formats — FLAC, ALAC, WAV, AIFF, DSD (DoP), WavPack, APE</li>
-        <li>8-band parametric EQ with AutoEQ support for 4000+ headphone profiles</li>
-        <li>Native NAS/SMB — browse and play from network drives without mounting</li>
-        <li>Smart Home — rediscover forgotten albums, track your most-played artists</li>
-        <li>Gapless playback with native sample rate switching</li>
-        <li>Built in Rust with Tauri — lightweight, fast, no Electron bloat</li>
+        <li>Bit-perfect playback — Your music, untouched. HEAN delivers audio exactly as it was mastered, with zero processing or alteration. (CoreAudio Exclusive Mode)</li>
+        <li>Every format you own — Play FLAC, ALAC, WAV, AIFF, DSD and more. No codecs to install, no conversion needed.</li>
+        <li>Sound tuned for your headphones — Select your headphone model and HEAN optimizes the sound instantly. 4,000+ profiles built-in.</li>
+        <li>Play from your NAS — Browse and play music stored on your network drives as easily as local files.</li>
+        <li>Rediscover your collection — HEAN surfaces albums you forgot about and shows what you've been loving lately.</li>
+        <li>Seamless listening — Albums play as intended, with no gaps or glitches between tracks.</li>
+        <li>Light as air — Launches in under a second, uses minimal RAM, and never slows down your Mac.</li>
       </ul>
       <h2>Pricing</h2>
       <p>One-time purchase: €39. No subscription. Free 30-day trial with all features.</p>
       <h2>Why HEAN?</h2>
-      <p>HEAN stands for "Hear Everything, Alter Nothing". Your music files reach your DAC bit-for-bit as they were mastered. No resampling, no processing, no compromise. HEAN is the modern alternative to Audirvana and foobar2000 — premium audio quality with a clean, intuitive interface.</p>
+      <p>HEAN is a lossless audio player and FLAC player for macOS with bit-perfect playback. Your music files reach your DAC bit-for-bit as they were mastered. No resampling, no processing, no compromise. HEAN is the modern Audirvana alternative — premium audio quality with a clean, intuitive interface.</p>
       <p>Available for macOS. Windows coming soon.</p>
+      <h2>Contact</h2>
+      <p>Question, feedback, or just want to say hi? Email us at <a href="mailto:contact@hean.app" style="color:#fff">contact@hean.app</a></p>
     </div>
   </noscript>
   <script type="text/babel" data-type="module">
@@ -753,7 +756,8 @@ function Hero() {
         </div>
         <SpotsProgress taken={taken} />
         <div className="hero__actions">
-          <a className="btn-main btn-main--pulse" href="#join">Test the beta, get the app free →</a>
+          <a className="btn-main btn-main--pulse" href="#join">Try free for 30 days →</a>
+          <div className="hero__cta-sub">No credit card required · macOS 12+</div>
           <a className="btn-ghost" href="#about">Discover the project ↓</a>
         </div>
       </div>
@@ -768,6 +772,21 @@ function Hero() {
         <span>24-BIT / 192KHZ</span>
       </div>
     </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
+// SOCIAL PROOF BAR
+// ═══════════════════════════════════════════════
+function SocialProof() {
+  return (
+    <div className="proof">
+      <span className="proof__item">Built with Rust & Tauri</span>
+      <span className="proof__sep">·</span>
+      <span className="proof__item">Bit-perfect CoreAudio</span>
+      <span className="proof__sep">·</span>
+      <span className="proof__item">No subscription, ever</span>
+    </div>
   );
 }
 
@@ -804,38 +823,38 @@ function About() {
 const features = [
   {
     id: "01",
-    title: "Bit-perfect signal",
-    body: "CoreAudio Exclusive Mode with Hog Mode — your DAC is locked to Hean, the OS mixer is bypassed. Native sample rate switching between tracks. No resampling unless your hardware requires it.",
+    title: "Bit-perfect playback",
+    body: "Your music, untouched — HEAN delivers audio exactly as it was mastered, with zero processing or alteration. (CoreAudio Exclusive Mode)",
     icon: "waveform",
   },
   {
     id: "02",
     title: "Play from your NAS",
-    body: "Connect to any NAS or network share natively via SMB. mDNS/Bonjour discovers your devices automatically. Progressive buffering means zero stuttering — no Finder mount required.",
+    body: "Browse and play music stored on your network drives as easily as local files.",
     icon: "nas",
   },
   {
     id: "03",
-    title: "8-band parametric EQ",
-    body: "Fine-tune your sound with a professional-grade 8-band parametric equalizer. Fully bypassable — when all bands are flat, the signal path stays untouched.",
+    title: "Sound tuned for your headphones",
+    body: "Select your headphone model and HEAN optimizes the sound instantly. 4,000+ profiles built-in.",
     icon: "eq",
   },
   {
     id: "04",
-    title: "Light & instant",
-    body: "Under 80 MB of memory. Launches in under a second. Native on Intel and Apple Silicon. Built entirely in Rust — the app gets out of the way, you just hear music.",
+    title: "Light as air",
+    body: "Launches in under a second, uses minimal RAM, and never slows down your Mac.",
     icon: "bolt",
   },
   {
     id: "05",
-    title: "Your library, enriched",
-    body: "Browse by artist, album, genre, folder. Edit metadata inline or in bulk. Cover art auto-fetched from MusicBrainz, Deezer, and WikiMedia. Playlists, search, listening stats — nothing behind a paywall.",
+    title: "Rediscover your collection",
+    body: "HEAN surfaces albums you forgot about and shows what you've been loving lately.",
     icon: "grid",
   },
   {
     id: "06",
-    title: "7 formats, every DAC",
-    body: "FLAC, ALAC, WAV, AIFF, MP3, AAC, OGG Vorbis. USB DACs, built-in output, any CoreAudio device. Gapless playback. No account. No internet. No compromise.",
+    title: "Every format you own",
+    body: "Play FLAC, ALAC, WAV, AIFF, DSD and more. No codecs to install, no conversion needed. Seamless listening — albums play as intended, with no gaps or glitches between tracks.",
     icon: "globe",
   },
   {
@@ -1514,6 +1533,29 @@ function FeatureRequestPopover() {
 }
 
 // ═══════════════════════════════════════════════
+// CONTACT
+// ═══════════════════════════════════════════════
+function Contact() {
+  const [r, v] = useReveal();
+  return (
+    <section className="contact" id="contact" ref={r}>
+      <div className={`contact__inner${v ? " vis" : ""}`}>
+        <h2 className="contact__h2">Get in touch</h2>
+        <p className="contact__p">
+          Question, feedback, or just want to say hi? We'd love to hear from you.
+        </p>
+        <a
+          className="contact__btn"
+          href="mailto:contact@hean.app"
+        >
+          Email us at contact@hean.app
+        </a>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════
 // FOOTER
 // ═══════════════════════════════════════════════
 function Footer() {
@@ -1941,6 +1983,25 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   .beta__share-btn{text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center}
 }
 
+/* ─── SOCIAL PROOF ─── */
+.proof{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  padding:24px 32px;
+  font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:#555;font-weight:400;
+}
+.proof__sep{color:#333}
+@media(max-width:768px){
+  .proof{flex-wrap:wrap;gap:8px;padding:20px 16px;font-size:9px;letter-spacing:2px}
+  .proof__sep{display:none}
+}
+
+/* ─── HERO CTA SUB ─── */
+.hero__cta-sub{
+  font-size:11px;color:#666;letter-spacing:1px;font-weight:400;
+  margin-top:-8px;
+}
+
 /* ─── URGENCY BANNER ─── */
 .urgency{
   padding:28px 32px;text-align:center;
@@ -2179,6 +2240,32 @@ a{color:inherit;text-decoration:none;cursor:pointer}
   animation:blink 1.2s ease-in-out infinite;
 }
 
+/* ─── CONTACT ─── */
+.contact{padding:80px 32px}
+.contact__inner{
+  max-width:600px;margin:0 auto;text-align:center;
+  background:#0a0a0a;border:1px solid #151515;border-radius:4px;
+  padding:60px 40px;
+  opacity:0;transform:translateY(20px);transition:all .8s ease;
+}
+.contact__inner.vis{opacity:1;transform:translateY(0)}
+.contact__h2{font-size:clamp(22px,3vw,32px);font-weight:200;letter-spacing:1px;margin-bottom:16px}
+.contact__p{font-size:14px;line-height:1.8;color:#aaa;font-weight:400;margin-bottom:32px}
+.contact__btn{
+  display:inline-block;padding:14px 32px;
+  font-family:'Geist Mono','Space Mono',monospace;
+  font-size:12px;letter-spacing:2px;font-weight:400;
+  color:#fff;background:transparent;
+  border:1px solid #333;border-radius:2px;
+  transition:all .2s;cursor:pointer;text-decoration:none;
+}
+.contact__btn:hover{background:#fff;color:#000;border-color:#fff}
+@media(max-width:768px){
+  .contact{padding:48px 16px}
+  .contact__inner{padding:40px 24px}
+  .contact__btn{width:100%;text-align:center;padding:16px 24px}
+}
+
 /* ─── FOOTER ─── */
 .foot{padding:40px 32px;border-top:1px solid #0a0a0a}
 .foot__inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
@@ -2206,6 +2293,7 @@ function App() {
       <style>{css}</style>
       <Nav />
       <Hero />
+      <SocialProof />
       <UrgencyBanner />
       <AppMockup />
       <About />
@@ -2216,6 +2304,7 @@ function App() {
       <Roadmap />
       <Quote />
       <BetaCTA />
+      <Contact />
       <Footer />
     </React.Fragment>
   );
